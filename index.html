@@ -190,19 +190,19 @@
       align-items: center;
     }
     .profile-avatar {
-      width: 44px;
-      height: 44px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      background: var(--abby-red-soft);
-      color: var(--abby-red);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 17px;
-      letter-spacing: -0.01em;
+      overflow: hidden;
       flex-shrink: 0;
+      background: var(--abby-red-soft);
+    }
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
     }
     .profile-info {
       display: flex;
@@ -703,15 +703,15 @@
           <ul class="value-list">
             <li>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-              <span>The full Abby workflow, live and unedited.</span>
+              <span>How much time your team could get back each year end.</span>
             </li>
             <li>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-              <span>Compliance workpaper preparation automated end to end.</span>
+              <span>What compliance feels like without the late-night scramble.</span>
             </li>
             <li>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-              <span>Software built by practising Chartered Accountants, from inside the profession.</span>
+              <span>Files that stand up to review, without a last-minute panic.</span>
             </li>
           </ul>
         </section>
@@ -719,14 +719,18 @@
         <section class="founders" aria-label="Meet the founders">
           <div class="profiles">
             <div class="profile">
-              <div class="profile-avatar" aria-hidden="true">C</div>
+              <div class="profile-avatar">
+                <img src="corinne.jpeg" alt="Corinne, co-founder of Abby" loading="lazy" />
+              </div>
               <div class="profile-info">
                 <span class="profile-name">Corinne</span>
                 <span class="profile-title">Co-founder</span>
               </div>
             </div>
             <div class="profile">
-              <div class="profile-avatar" aria-hidden="true">M</div>
+              <div class="profile-avatar">
+                <img src="mark.jpeg" alt="Mark, co-founder of Abby" loading="lazy" />
+              </div>
               <div class="profile-info">
                 <span class="profile-name">Mark</span>
                 <span class="profile-title">Co-founder</span>

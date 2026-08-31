@@ -865,7 +865,12 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Booking your demo...';
 
-      var payload = new FormData();
+      // Use URLSearchParams (application/x-www-form-urlencoded) rather than
+      // multipart FormData. Google Apps Script parses form-urlencoded POST
+      // bodies into e.parameter reliably, and this content type avoids the
+      // no-cors multipart edge case where some browsers downgrade the
+      // request to GET across the cross-origin 302 redirect from /exec.
+      var payload = new URLSearchParams();
       payload.append('firstName', firstName);
       payload.append('lastName', lastName);
       payload.append('firm', firm);
@@ -880,17 +885,17 @@
       payload.append('stand', 'Stand 10');
       payload.append('timestamp', new Date().toISOString());
 
-      // Fire and forget POST to Google Apps Script. The Apps Script writes
-      // the row to Sheets and sends both the attendee confirmation and a
-      // notification to corinne@cheersabby.com and mark@cheersabby.com.
       var payloadPreview = {};
       payload.forEach(function (value, key) { payloadPreview[key] = value; });
       console.log('[Abby booking] POST to:', APPS_SCRIPT_URL);
-      console.log('[Abby booking] FormData entries:', payloadPreview);
+      console.log('[Abby booking] Method: POST, body type: application/x-www-form-urlencoded');
+      console.log('[Abby booking] Payload entries:', payloadPreview);
+      console.log('[Abby booking] Payload as string:', payload.toString());
 
       fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
+        redirect: 'follow',
         body: payload
       }).then(function (response) {
         console.log('[Abby booking] Fetch resolved:', {

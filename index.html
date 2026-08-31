@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Book an Abby demo at GAAP, Stand 10, Auckland</title>
-  <meta name="description" content="Book a 15-minute Abby demo at GAAP 2026, Stand 10, Viaduct Events Centre, Auckland. See the four-step workflow and 40+ workpapers in about 30 seconds." />
+  <title>Book an Abby demo at GAP, Stand 10, Auckland</title>
+  <meta name="description" content="Book a 15-minute Abby demo at GAP 2026, Stand 10, Viaduct Events Centre, Auckland. See the four-step workflow and 40+ workpapers in about 30 seconds." />
   <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/65e2ba72843067f242655f2e/69c997bf932f0bdd890ed7e4_favicon-32x32.png" />
   <link rel="shortcut icon" href="https://cdn.prod.website-files.com/65e2ba72843067f242655f2e/69c997bf932f0bdd890ed7e4_favicon-32x32.png" />
   <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/img/webclip.png" />
@@ -589,7 +589,7 @@
       </div>
 
       <div class="left-content">
-        <h1>15-minute <span class="accent">Abby</span> demo at The GAAP.</h1>
+        <h1>15-minute <span class="accent">Abby</span> demo at The GAP.</h1>
         <ul class="details" aria-label="Event details">
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/></svg>
@@ -601,7 +601,7 @@
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-            <span>Stand 10, GAAP CPD</span>
+            <span>Stand 10, GAP CPD</span>
           </li>
         </ul>
       </div>
@@ -1056,7 +1056,7 @@
 
     if (isAdminRoute()) {
       document.body.classList.add('is-admin');
-      document.title = 'Abby GAAP bookings';
+      document.title = 'Abby GAP bookings';
       renderAdmin();
       var exportBtn = document.getElementById('exportCsvBtn');
       if (exportBtn) exportBtn.addEventListener('click', downloadBookingsCsv);
@@ -1090,7 +1090,7 @@
       var subject = 'Your Abby demo is booked, ' + p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
       var bodyAttendee =
         'Hi ' + p.firstName + ',\n\n' +
-        'Thanks for booking a 15-minute Abby demo at GAAP 2026.\n\n' +
+        'Thanks for booking a 15-minute Abby demo at GAP 2026.\n\n' +
         'Day: ' + p.selectedDateLabel + '\n' +
         'Time: ' + p.selectedTimeLabel + '\n' +
         'Stand: ' + p.stand + '\n' +
@@ -1099,12 +1099,12 @@
       MailApp.sendEmail(p.email, subject, bodyAttendee);
 
       var notify =
-        'New Abby demo booking at GAAP.\n\n' +
+        'New Abby demo booking at GAP.\n\n' +
         p.firstName + ' ' + p.lastName + ' (' + p.firm + ')\n' +
         p.email + ' / ' + p.phone + '\n' +
         p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
-      MailApp.sendEmail('corinne@cheersabby.com', 'New GAAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
-      MailApp.sendEmail('mark@cheersabby.com', 'New GAAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
+      MailApp.sendEmail('corinne@cheersabby.com', 'New GAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
+      MailApp.sendEmail('mark@cheersabby.com', 'New GAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
 
       return ContentService.createTextOutput('ok');
     }

@@ -694,6 +694,7 @@
   </section>
 
   <script>
+    console.log('[Abby booking] page loaded');
     // ------------------------------------------------------------------
     // Config
     // ------------------------------------------------------------------
@@ -839,6 +840,7 @@
     function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
     form.addEventListener('submit', function (e) {
+      console.log('[Abby booking] submit fired');
       e.preventDefault();
       formErr.classList.remove('show');
       formErr.textContent = 'Please fill in all fields with a valid email.';

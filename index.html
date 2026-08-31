@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Book an Abby demo at GAAP, Stand 10, Auckland</title>
+  <meta name="description" content="Book a 15-minute Abby demo at GAAP 2026, Stand 10, Viaduct Events Centre, Auckland. See the four-step workflow and 40+ workpapers in about 30 seconds." />
+  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/65e2ba72843067f242655f2e/69c997bf932f0bdd890ed7e4_favicon-32x32.png" />
+  <link rel="shortcut icon" href="https://cdn.prod.website-files.com/65e2ba72843067f242655f2e/69c997bf932f0bdd890ed7e4_favicon-32x32.png" />
+  <link rel="apple-touch-icon" href="https://cdn.prod.website-files.com/img/webclip.png" />
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=open-sauce-one@400,500,600,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Palette */
+      --abby-red: #b72e3e;
+      --abby-red-dark: #931f2d;
+      --abby-red-soft: #fbeef0;
+      --ink: #14181f;
+      --ink-2: #2a2f3a;
+      --ink-soft: #545b68;
+      --muted: #8b93a1;
+      --line: #eceef2;
+      --line-strong: #dcdfe5;
+      --page: #f6f4ef;      /* warm off white, echoes cheersabby.com */
+      --card: #ffffff;
+      --disabled-bg: #f2f3f6;
+      --disabled-text: #b0b6c1;
+      --success-bg: #e8f4ec;
+      --success-text: #1e6b3a;
+
+      /* Type */
+      --font-display: 'Clash Display', sans-serif;
+      --font-body: 'Open Sauce One', sans-serif;
+
+      /* Shape */
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 20px;
+
+      /* Shadows */
+      --shadow-card: 0 1px 2px rgba(20, 24, 31, 0.03), 0 12px 40px rgba(20, 24, 31, 0.06);
+      --shadow-btn: 0 1px 2px rgba(20, 24, 31, 0.06);
+      --shadow-lift: 0 2px 4px rgba(20, 24, 31, 0.04), 0 8px 20px rgba(20, 24, 31, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--page);
+      line-height: 1.5;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+
+    /* ---------- STAGE ---------- */
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(360px, 1fr) minmax(560px, 1.2fr);
+      min-height: 100vh;
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+
+    /* ---------- LEFT ---------- */
+    .left {
+      padding: 64px 64px 48px;
+      display: flex;
+      flex-direction: column;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 72px;
+    }
+    .brand img.logo {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+    .pill {
+      margin-left: auto;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--abby-red);
+      background: var(--abby-red-soft);
+      padding: 5px 10px;
+      border-radius: 999px;
+    }
+
+    .left-content { max-width: 480px; }
+    .left-content h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 46px;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0;
+      color: var(--ink);
+    }
+    .left-content h1 .accent { color: var(--abby-red); }
+    .meta {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 20px;
+      color: var(--ink);
+      font-weight: 500;
+      line-height: 1.35;
+      letter-spacing: -0.005em;
+    }
+    .meta .stand {
+      color: var(--abby-red);
+      font-weight: 600;
+    }
+    .left-content h1 + .meta { margin-top: 36px; }
+    .meta + .meta { margin-top: 10px; color: var(--ink-2); }
+
+    .intro {
+      margin: 36px 0 0;
+      font-family: var(--font-body);
+      font-size: 17.5px;
+      color: var(--ink-2);
+      font-weight: 400;
+      line-height: 1.55;
+      max-width: 460px;
+    }
+    .intro strong { color: var(--ink); font-weight: 600; }
+
+    .left-foot {
+      margin-top: auto;
+      padding-top: 48px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .left-foot a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line-strong);
+      padding-bottom: 1px;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .left-foot a:hover { color: var(--abby-red); border-color: var(--abby-red); }
+
+    /* ---------- RIGHT ---------- */
+    .right {
+      padding: 56px 64px 56px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .right-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .right-head h2 {
+      font-family: var(--font-display);
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .right-head .tz {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Tabs, minimal segmented control, no red */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(20, 24, 31, 0.04);
+      padding: 4px;
+      border-radius: var(--r-md);
+      width: fit-content;
+    }
+    .tab {
+      padding: 10px 18px;
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.active {
+      background: var(--card);
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: var(--shadow-btn);
+    }
+
+    /* Calendar card */
+    .calendar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+      padding: 28px;
+    }
+    .session + .session {
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+    .session-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    /* Not "all-caps text" content, this is a small ui label styled via CSS letter-spacing, not screamed copy */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .slot {
+      padding: 12px 6px;
+      background: var(--card);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-sm);
+      color: var(--ink-2);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
+      text-align: center;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .slot:hover {
+      border-color: var(--ink-2);
+      color: var(--ink);
+      box-shadow: var(--shadow-btn);
+    }
+    .slot:active { transform: translateY(1px); }
+    .slot.selected {
+      background: var(--abby-red);
+      border-color: var(--abby-red);
+      color: #ffffff;
+      box-shadow: 0 1px 2px rgba(183, 46, 62, 0.25), 0 6px 20px rgba(183, 46, 62, 0.20);
+    }
+    .slot.booked,
+    .slot[disabled] {
+      background: var(--disabled-bg);
+      color: var(--disabled-text);
+      border-color: transparent;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    .slot.booked:hover {
+      background: var(--disabled-bg);
+      color: var(--disabled-text);
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    /* ---------- FORM ---------- */
+    .form-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+      padding: 32px;
+      margin-top: 4px;
+    }
+    .form-panel.open { display: block; }
+    .form-panel .selected-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 14.5px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+    .form-panel .selected-summary .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--abby-red);
+      flex-shrink: 0;
+    }
+    .form-panel h3 {
+      font-family: var(--font-display);
+      margin: 0 0 18px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-2);
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+    input {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--r-sm);
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      color: var(--ink);
+      background: var(--card);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input::placeholder { color: var(--muted); }
+    input:focus {
+      outline: none;
+      border-color: var(--abby-red);
+      box-shadow: 0 0 0 3px rgba(183, 46, 62, 0.12);
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      padding: 13px 22px;
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+      letter-spacing: 0.005em;
+    }
+    .btn-primary {
+      background: var(--abby-red);
+      color: #ffffff;
+      box-shadow: 0 1px 2px rgba(183, 46, 62, 0.25);
+    }
+    .btn-primary:hover {
+      background: var(--abby-red-dark);
+      box-shadow: 0 2px 4px rgba(147, 31, 45, 0.30), 0 6px 16px rgba(183, 46, 62, 0.18);
+    }
+    .btn-primary:disabled {
+      background: var(--muted);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink-soft);
+    }
+    .btn-ghost:hover { color: var(--ink); }
+
+    .err {
+      color: var(--abby-red);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .err.show { display: block; }
+
+    /* ---------- CONFIRMATION ---------- */
+    .confirm {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 40px 36px;
+      box-shadow: var(--shadow-card);
+    }
+    .confirm.show { display: block; }
+    .confirm .check {
+      width: 46px;
+      height: 46px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .confirm h2 {
+      font-family: var(--font-display);
+      margin: 0 0 10px;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+    .confirm p {
+      margin: 0 0 8px;
+      color: var(--ink-soft);
+      font-size: 15.5px;
+      line-height: 1.6;
+    }
+    .confirm .details {
+      margin-top: 22px;
+      padding: 20px 22px;
+      background: var(--page);
+      border-radius: var(--r-md);
+      border: 1px solid var(--line);
+    }
+    .confirm .details div {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0;
+      font-size: 14.5px;
+    }
+    .confirm .details div span:first-child {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .confirm .details div span:last-child {
+      color: var(--ink);
+      font-weight: 600;
+      text-align: right;
+    }
+    .confirm .contact {
+      margin-top: 22px;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+    .confirm .contact a {
+      color: var(--abby-red);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(183, 46, 62, 0.3);
+    }
+    .confirm .contact a:hover { border-color: var(--abby-red); }
+
+    /* ---------- ADMIN VIEW ---------- */
+    .admin { display: none; }
+    body.is-admin .stage { display: none; }
+    body.is-admin .admin { display: block; }
+    .admin {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+    .admin-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .admin-title {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .admin-title h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.015em;
+    }
+    .admin-count {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .admin-actions { display: flex; gap: 10px; }
+    .admin-actions .btn { padding: 10px 16px; font-size: 13.5px; }
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      overflow: auto;
+      box-shadow: var(--shadow-card);
+    }
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    table.admin-table th,
+    table.admin-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    table.admin-table th {
+      background: var(--page);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 11.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+    }
+    table.admin-table tr:last-child td { border-bottom: 0; }
+    table.admin-table tr:hover td { background: rgba(20, 24, 31, 0.02); }
+    table.admin-table td.name { font-weight: 600; color: var(--ink); }
+    table.admin-table td.muted { color: var(--muted); }
+    .admin-empty {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+    .admin-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 1080px) {
+      .left { padding: 44px 40px; }
+      .right { padding: 44px 40px 44px 16px; }
+      .left-content h1 { font-size: 34px; }
+    }
+    @media (max-width: 900px) {
+      .stage { grid-template-columns: 1fr; min-height: auto; }
+      .left { padding: 36px 24px; gap: 28px; }
+      .right { padding: 28px 24px 40px; }
+      .left-content h1 { font-size: 30px; }
+      .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .calendar { padding: 22px; }
+      .form-panel { padding: 24px; }
+    }
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .form-grid { grid-template-columns: 1fr; }
+      .left-content h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stage">
+
+    <aside class="left">
+      <div class="brand">
+        <img class="logo" src="https://cdn.prod.website-files.com/65e2ba72843067f242655f2e/65e3dc26301ad30d254df443_abby.png" alt="Abby" />
+      </div>
+
+      <div class="left-content">
+        <h1>15-minute <span class="accent">Abby</span> demo at The GAAP.</h1>
+        <p class="meta"><span class="stand">Stand 10</span>, Viaduct Events Centre, Auckland.</p>
+        <p class="meta">Wednesday 10 and Thursday 11 September 2026.</p>
+      </div>
+
+      <div class="left-foot">
+        Questions? Email <a href="mailto:welcome@cheersabby.com">welcome@cheersabby.com</a>.
+      </div>
+    </aside>
+
+    <section class="right">
+      <div class="right-head">
+        <h2>Pick a time</h2>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-day="2026-09-10" role="tab">Wednesday 10 September</button>
+        <button class="tab" data-day="2026-09-11" role="tab">Thursday 11 September</button>
+      </div>
+
+      <div class="calendar" id="calendarCard">
+        <div class="session">
+          <p class="session-label">Morning</p>
+          <div class="grid" id="gridMorning"></div>
+        </div>
+        <div class="session">
+          <p class="session-label">Afternoon</p>
+          <div class="grid" id="gridAfternoon"></div>
+        </div>
+      </div>
+
+      <div class="form-panel" id="formPanel">
+        <div class="selected-summary" id="selectedSummary">
+          <span class="dot"></span>
+          <span id="selectedText"></span>
+        </div>
+        <h3>Your details</h3>
+        <form id="bookingForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="firstName">First name</label>
+              <input id="firstName" name="firstName" type="text" autocomplete="given-name" required />
+            </div>
+            <div class="field">
+              <label for="lastName">Last name</label>
+              <input id="lastName" name="lastName" type="text" autocomplete="family-name" required />
+            </div>
+            <div class="field full">
+              <label for="firm">Firm name</label>
+              <input id="firm" name="firm" type="text" autocomplete="organization" required />
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" required />
+            </div>
+          </div>
+          <div class="err" id="formErr">Please fill in all fields with a valid email.</div>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Confirm my demo</button>
+            <button type="button" class="btn btn-ghost" id="cancelBtn">Choose a different time</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="confirm" id="confirmCard">
+        <div class="check">&#10003;</div>
+        <h2 id="confirmHeading">You are booked in.</h2>
+        <p id="confirmBody"></p>
+        <div class="details">
+          <div><span>Day</span><span id="confDay"></span></div>
+          <div><span>Time</span><span id="confTime"></span></div>
+          <div><span>Stand</span><span>Stand 10</span></div>
+          <div><span>Venue</span><span>Viaduct Events Centre, Auckland</span></div>
+        </div>
+        <p class="contact">If anything changes, just email <a href="mailto:welcome@cheersabby.com">welcome@cheersabby.com</a> and we will sort it.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="admin" id="adminView" aria-label="Bookings admin">
+    <div class="admin-head">
+      <div class="admin-title">
+        <h1>Bookings</h1>
+        <span class="admin-count" id="adminCount">0 bookings</span>
+      </div>
+      <div class="admin-actions">
+        <button type="button" class="btn btn-primary" id="exportCsvBtn">Export to CSV</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="admin-table" id="adminTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Firm</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody"></tbody>
+      </table>
+    </div>
+    <p class="admin-note">Bookings are read from this browser's local storage. To pull the complete list across all browsers, use the Google Sheet.</p>
+  </section>
+
+  <script>
+    // ------------------------------------------------------------------
+    // Config
+    // ------------------------------------------------------------------
+    var APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+    var DAYS = [
+      { key: '2026-09-10', label: 'Wednesday 10 September 2026' },
+      { key: '2026-09-11', label: 'Thursday 11 September 2026' }
+    ];
+
+    // 15-minute slots from 8:30 to 17:00 NZT. Lunch 12:00 to 13:00 is skipped.
+    function buildSlots() {
+      var morning = [];
+      var afternoon = [];
+      var start = 8 * 60 + 30;
+      var end = 17 * 60;
+      for (var m = start; m < end; m += 15) {
+        if (m >= 12 * 60 && m < 13 * 60) continue;
+        var h = Math.floor(m / 60);
+        var mm = m % 60;
+        var slot = { value: pad(h) + ':' + pad(mm), label: formatLabel(h, mm), hour: h };
+        if (h < 12) morning.push(slot); else afternoon.push(slot);
+      }
+      return { morning: morning, afternoon: afternoon };
+    }
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function formatLabel(h, m) {
+      var ampm = h >= 12 ? 'pm' : 'am';
+      var h12 = h % 12; if (h12 === 0) h12 = 12;
+      return h12 + ':' + pad(m) + ampm;
+    }
+
+    // ------------------------------------------------------------------
+    // Storage
+    // ------------------------------------------------------------------
+    var STORAGE_KEY = 'abby_gaap_bookings_v1';
+    function loadBooked() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) { return {}; }
+    }
+    function saveBooked(map) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
+    }
+    function isBooked(day, time) {
+      var map = loadBooked();
+      return !!(map[day] && map[day][time]);
+    }
+    function markBooked(day, time, record) {
+      var map = loadBooked();
+      if (!map[day]) map[day] = {};
+      record = record || {};
+      if (!record.timestamp) record.timestamp = new Date().toISOString();
+      map[day][time] = record;
+      saveBooked(map);
+    }
+
+    // ------------------------------------------------------------------
+    // State + rendering
+    // ------------------------------------------------------------------
+    var state = { day: DAYS[0].key, time: null };
+    var SLOTS = buildSlots();
+    var ALL_SLOTS = SLOTS.morning.concat(SLOTS.afternoon);
+
+    var tabs = document.querySelectorAll('.tab');
+    var gridMorning = document.getElementById('gridMorning');
+    var gridAfternoon = document.getElementById('gridAfternoon');
+    var formPanel = document.getElementById('formPanel');
+    var selectedText = document.getElementById('selectedText');
+    var confirmCard = document.getElementById('confirmCard');
+    var calendarCard = document.getElementById('calendarCard');
+    var form = document.getElementById('bookingForm');
+    var formErr = document.getElementById('formErr');
+    var submitBtn = document.getElementById('submitBtn');
+    var cancelBtn = document.getElementById('cancelBtn');
+
+    function dayLabel(key) {
+      for (var i = 0; i < DAYS.length; i++) if (DAYS[i].key === key) return DAYS[i].label;
+      return key;
+    }
+    function timeLabel(value) {
+      for (var i = 0; i < ALL_SLOTS.length; i++) if (ALL_SLOTS[i].value === value) return ALL_SLOTS[i].label;
+      return value;
+    }
+
+    function renderGrid() {
+      gridMorning.innerHTML = '';
+      gridAfternoon.innerHTML = '';
+      SLOTS.morning.forEach(function (slot) { gridMorning.appendChild(makeSlotBtn(slot)); });
+      SLOTS.afternoon.forEach(function (slot) { gridAfternoon.appendChild(makeSlotBtn(slot)); });
+    }
+
+    function makeSlotBtn(slot) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot';
+      btn.textContent = slot.label;
+      btn.setAttribute('data-time', slot.value);
+      if (isBooked(state.day, slot.value)) {
+        btn.classList.add('booked');
+        btn.disabled = true;
+        btn.setAttribute('aria-label', slot.label + ' NZT, already booked');
+      } else {
+        btn.setAttribute('aria-label', slot.label + ' NZT, available');
+        btn.addEventListener('click', function () { selectSlot(slot.value); });
+      }
+      if (state.time === slot.value) btn.classList.add('selected');
+      return btn;
+    }
+
+    function selectSlot(time) {
+      state.time = time;
+      renderGrid();
+      formPanel.classList.add('open');
+      selectedText.textContent = dayLabel(state.day) + ' at ' + timeLabel(time) + ' NZT';
+      setTimeout(function () {
+        formPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        state.day = tab.getAttribute('data-day');
+        state.time = null;
+        formPanel.classList.remove('open');
+        renderGrid();
+      });
+    });
+
+    cancelBtn.addEventListener('click', function () {
+      state.time = null;
+      formPanel.classList.remove('open');
+      renderGrid();
+      calendarCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ------------------------------------------------------------------
+    // Form submit
+    // ------------------------------------------------------------------
+    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      formErr.classList.remove('show');
+      formErr.textContent = 'Please fill in all fields with a valid email.';
+
+      var firstName = document.getElementById('firstName').value.trim();
+      var lastName = document.getElementById('lastName').value.trim();
+      var firm = document.getElementById('firm').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var phone = document.getElementById('phone').value.trim();
+
+      if (!firstName || !lastName || !firm || !isEmail(email) || !phone || !state.time) {
+        formErr.classList.add('show');
+        return;
+      }
+      if (isBooked(state.day, state.time)) {
+        formErr.textContent = 'Sorry, that slot was just taken. Please pick another.';
+        formErr.classList.add('show');
+        state.time = null;
+        formPanel.classList.remove('open');
+        renderGrid();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Booking your demo...';
+
+      var payload = new FormData();
+      payload.append('firstName', firstName);
+      payload.append('lastName', lastName);
+      payload.append('firm', firm);
+      payload.append('email', email);
+      payload.append('phone', phone);
+      payload.append('notes', '');
+      payload.append('selectedDate', state.day);
+      payload.append('selectedDateLabel', dayLabel(state.day));
+      payload.append('selectedTime', state.time);
+      payload.append('selectedTimeLabel', timeLabel(state.time) + ' NZT');
+      payload.append('venue', 'Viaduct Events Centre, Auckland');
+      payload.append('stand', 'Stand 10');
+      payload.append('timestamp', new Date().toISOString());
+
+      // Fire and forget POST to Google Apps Script. The Apps Script writes
+      // the row to Sheets and sends both the attendee confirmation and a
+      // notification to corinne@cheersabby.com and mark@cheersabby.com.
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: payload
+      }).catch(function () { /* ignored, no-cors */ });
+
+      markBooked(state.day, state.time, {
+        firstName: firstName,
+        lastName: lastName,
+        firm: firm,
+        email: email,
+        phone: phone,
+        timestamp: new Date().toISOString()
+      });
+      showConfirmation(firstName, email);
+    });
+
+    function showConfirmation(firstName, email) {
+      document.getElementById('confDay').textContent = dayLabel(state.day);
+      document.getElementById('confTime').textContent = timeLabel(state.time) + ' NZT';
+      document.getElementById('confirmHeading').textContent = 'Thanks ' + firstName + ', you are booked in.';
+      document.getElementById('confirmBody').textContent =
+        'We will see you at the Abby stand for a quick 15-minute demo. A confirmation with all the details is on its way to ' + email + '.';
+      calendarCard.style.display = 'none';
+      formPanel.style.display = 'none';
+      confirmCard.classList.add('show');
+      confirmCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    renderGrid();
+
+    // ------------------------------------------------------------------
+    // Admin view (accessible via ?admin in the URL)
+    // ------------------------------------------------------------------
+    function isAdminRoute() {
+      return /(^\?|&)admin(=|&|$)/.test(window.location.search);
+    }
+
+    function collectBookingRows() {
+      var map = loadBooked();
+      var rows = [];
+      Object.keys(map).sort().forEach(function (day) {
+        Object.keys(map[day]).sort().forEach(function (time) {
+          var v = map[day][time];
+          var rec = (v && typeof v === 'object') ? v : { timestamp: v };
+          rows.push({
+            date: day,
+            time: time,
+            firstName: rec.firstName || '',
+            lastName: rec.lastName || '',
+            firm: rec.firm || '',
+            email: rec.email || '',
+            phone: rec.phone || '',
+            timestamp: rec.timestamp
+              ? (typeof rec.timestamp === 'number' ? new Date(rec.timestamp).toISOString() : rec.timestamp)
+              : ''
+          });
+        });
+      });
+      return rows;
+    }
+
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    function csvEscape(s) {
+      s = String(s == null ? '' : s);
+      if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+
+    function renderAdmin() {
+      var body = document.getElementById('adminTableBody');
+      var count = document.getElementById('adminCount');
+      var rows = collectBookingRows();
+      count.textContent = rows.length + (rows.length === 1 ? ' booking' : ' bookings');
+
+      if (!rows.length) {
+        body.innerHTML = '<tr><td class="admin-empty" colspan="8">No bookings yet. Once attendees book, they will show up here.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = rows.map(function (r) {
+        return '<tr>' +
+          '<td>' + escHtml(r.date) + '</td>' +
+          '<td>' + escHtml(timeLabel(r.time) || r.time) + '</td>' +
+          '<td class="name">' + escHtml(r.firstName) + '</td>' +
+          '<td class="name">' + escHtml(r.lastName) + '</td>' +
+          '<td>' + escHtml(r.firm) + '</td>' +
+          '<td>' + escHtml(r.email) + '</td>' +
+          '<td>' + escHtml(r.phone) + '</td>' +
+          '<td class="muted">' + escHtml(r.timestamp) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function downloadBookingsCsv() {
+      var rows = collectBookingRows();
+      var header = ['Date', 'Time', 'First name', 'Last name', 'Firm', 'Email', 'Phone', 'Timestamp'];
+      var lines = [header.map(csvEscape).join(',')];
+      rows.forEach(function (r) {
+        lines.push([
+          r.date,
+          timeLabel(r.time) || r.time,
+          r.firstName,
+          r.lastName,
+          r.firm,
+          r.email,
+          r.phone,
+          r.timestamp
+        ].map(csvEscape).join(','));
+      });
+      // UTF-8 BOM + CRLF line endings so Excel opens the file cleanly.
+      var csv = '﻿' + lines.join('\r\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'abby-gaap-bookings-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
+    }
+
+    if (isAdminRoute()) {
+      document.body.classList.add('is-admin');
+      document.title = 'Abby GAAP bookings';
+      renderAdmin();
+      var exportBtn = document.getElementById('exportCsvBtn');
+      if (exportBtn) exportBtn.addEventListener('click', downloadBookingsCsv);
+    }
+  </script>
+
+  <!--
+    ============================================================
+    Google Apps Script backend (set up separately)
+    ============================================================
+    Paste the following into a new Google Apps Script bound to
+    the target Google Sheet, then Deploy as Web app with access
+    set to "Anyone". Copy the /exec URL and replace
+    YOUR_APPS_SCRIPT_URL_HERE at the top of the <script> block.
+
+    function doPost(e) {
+      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+      var p = e.parameter;
+      sheet.appendRow([
+        p.timestamp,
+        p.selectedDateLabel,
+        p.selectedTimeLabel,
+        p.firstName,
+        p.lastName,
+        p.firm,
+        p.email,
+        p.phone,
+        p.notes
+      ]);
+
+      var subject = 'Your Abby demo is booked, ' + p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
+      var bodyAttendee =
+        'Hi ' + p.firstName + ',\n\n' +
+        'Thanks for booking a 15-minute Abby demo at GAAP 2026.\n\n' +
+        'Day: ' + p.selectedDateLabel + '\n' +
+        'Time: ' + p.selectedTimeLabel + '\n' +
+        'Stand: ' + p.stand + '\n' +
+        'Venue: ' + p.venue + '\n\n' +
+        'See you there.\n\nThe Abby team\ncheersabby.com';
+      MailApp.sendEmail(p.email, subject, bodyAttendee);
+
+      var notify =
+        'New Abby demo booking at GAAP.\n\n' +
+        p.firstName + ' ' + p.lastName + ' (' + p.firm + ')\n' +
+        p.email + ' / ' + p.phone + '\n' +
+        p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
+      MailApp.sendEmail('corinne@cheersabby.com', 'New GAAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
+      MailApp.sendEmail('mark@cheersabby.com', 'New GAAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
+
+      return ContentService.createTextOutput('ok');
+    }
+    ============================================================
+  -->
+</body>
+</html>

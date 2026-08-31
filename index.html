@@ -135,6 +135,99 @@
       display: block;
     }
 
+    .value-prop {
+      margin-top: 36px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+    }
+    .value-prop h2 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0 0 16px;
+      letter-spacing: -0.005em;
+    }
+    .value-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 12px;
+    }
+    .value-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ink-2);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+    .value-list li svg {
+      width: 16px;
+      height: 16px;
+      color: var(--abby-red);
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .founders {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+    .profiles {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .profile {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .profile-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--abby-red-soft);
+      color: var(--abby-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: -0.01em;
+      flex-shrink: 0;
+    }
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .profile-name {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .profile-title {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .ca-note {
+      margin: 14px 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
     .intro {
       margin: 36px 0 0;
       font-family: var(--font-body);
@@ -604,6 +697,44 @@
             <span>Stand 10, GAP CPD</span>
           </li>
         </ul>
+
+        <section class="value-prop">
+          <h2>In 15 minutes, you will see</h2>
+          <ul class="value-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span>The full Abby workflow, live and unedited.</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span>Compliance workpaper preparation automated end to end.</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span>Software built by practising Chartered Accountants, from inside the profession.</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="founders" aria-label="Meet the founders">
+          <div class="profiles">
+            <div class="profile">
+              <div class="profile-avatar" aria-hidden="true">C</div>
+              <div class="profile-info">
+                <span class="profile-name">Corinne</span>
+                <span class="profile-title">Co-founder</span>
+              </div>
+            </div>
+            <div class="profile">
+              <div class="profile-avatar" aria-hidden="true">M</div>
+              <div class="profile-info">
+                <span class="profile-name">Mark</span>
+                <span class="profile-title">Co-founder</span>
+              </div>
+            </div>
+          </div>
+          <p class="ca-note">Both practising Chartered Accountants, building Abby for the profession they know from the inside.</p>
+        </section>
       </div>
 
       <div class="left-foot">

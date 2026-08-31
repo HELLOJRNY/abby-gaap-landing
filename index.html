@@ -108,8 +108,18 @@
       color: var(--ink);
     }
     .left-content h1 .accent { color: var(--abby-red); }
-    .meta {
+    .details {
+      margin: 36px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+    .details li {
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       font-family: var(--font-body);
       font-size: 20px;
       color: var(--ink);
@@ -117,12 +127,13 @@
       line-height: 1.35;
       letter-spacing: -0.005em;
     }
-    .meta .stand {
+    .details svg {
+      width: 18px;
+      height: 18px;
       color: var(--abby-red);
-      font-weight: 600;
+      flex-shrink: 0;
+      display: block;
     }
-    .left-content h1 + .meta { margin-top: 36px; }
-    .meta + .meta { margin-top: 10px; color: var(--ink-2); }
 
     .intro {
       margin: 36px 0 0;
@@ -579,8 +590,20 @@
 
       <div class="left-content">
         <h1>15-minute <span class="accent">Abby</span> demo at The GAAP.</h1>
-        <p class="meta"><span class="stand">Stand 10</span>, Viaduct Events Centre, Auckland.</p>
-        <p class="meta">Wednesday 10 and Thursday 11 September 2026.</p>
+        <ul class="details" aria-label="Event details">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/></svg>
+            <span>10 and 11 September 2026</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Viaduct Events Centre, Auckland</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            <span>Stand 10, GAAP CPD</span>
+          </li>
+        </ul>
       </div>
 
       <div class="left-foot">

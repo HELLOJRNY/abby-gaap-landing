@@ -13,20 +13,20 @@
   <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=open-sauce-one@400,500,600,700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      /* Palette */
-      --abby-red: #b72e3e;
+      /* Palette (matched to cheersabby.com brand tokens) */
+      --abby-red: #b72e3e;         /* --brand-1--main */
       --abby-red-dark: #931f2d;
       --abby-red-soft: #fbeef0;
-      --ink: #14181f;
+      --ink: #111318;              /* --dark */
       --ink-2: #2a2f3a;
-      --ink-soft: #545b68;
+      --ink-soft: #464b51;         /* --charcoal */
       --muted: #8b93a1;
-      --line: #eceef2;
-      --line-strong: #dcdfe5;
-      --page: #f6f4ef;      /* warm off white, echoes cheersabby.com */
+      --line: rgba(0, 0, 0, 0.10); /* --border */
+      --line-strong: rgba(0, 0, 0, 0.14);
+      --page: #f4f3ef;             /* --soft--1 */
       --card: #ffffff;
-      --disabled-bg: #f2f3f6;
-      --disabled-text: #b0b6c1;
+      --disabled-bg: #f2f0eb;
+      --disabled-text: #a8a49c;
       --success-bg: #e8f4ec;
       --success-text: #1e6b3a;
 
@@ -375,13 +375,13 @@
       letter-spacing: 0.005em;
     }
     .btn-primary {
-      background: var(--abby-red);
+      background: var(--ink);
       color: #ffffff;
-      box-shadow: 0 1px 2px rgba(183, 46, 62, 0.25);
+      box-shadow: 0 1px 2px rgba(17, 19, 24, 0.20);
     }
     .btn-primary:hover {
-      background: var(--abby-red-dark);
-      box-shadow: 0 2px 4px rgba(147, 31, 45, 0.30), 0 6px 16px rgba(183, 46, 62, 0.18);
+      background: #000000;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22), 0 6px 16px rgba(0, 0, 0, 0.14);
     }
     .btn-primary:disabled {
       background: var(--muted);

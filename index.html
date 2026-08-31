@@ -883,11 +883,25 @@
       // Fire and forget POST to Google Apps Script. The Apps Script writes
       // the row to Sheets and sends both the attendee confirmation and a
       // notification to corinne@cheersabby.com and mark@cheersabby.com.
+      var payloadPreview = {};
+      payload.forEach(function (value, key) { payloadPreview[key] = value; });
+      console.log('[Abby booking] POST to:', APPS_SCRIPT_URL);
+      console.log('[Abby booking] FormData entries:', payloadPreview);
+
       fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         body: payload
-      }).catch(function () { /* ignored, no-cors */ });
+      }).then(function (response) {
+        console.log('[Abby booking] Fetch resolved:', {
+          type: response.type,
+          status: response.status,
+          ok: response.ok,
+          url: response.url
+        });
+      }).catch(function (err) {
+        console.error('[Abby booking] Fetch failed:', err);
+      });
 
       markBooked(state.day, state.time, {
         firstName: firstName,

@@ -567,6 +567,26 @@
       border-bottom: 1px solid rgba(183, 46, 62, 0.3);
     }
     .confirm .contact a:hover { border-color: var(--abby-red); }
+    .confirm-actions {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: center;
+    }
+    .gcal-link {
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border-bottom: 1px solid var(--line-strong);
+      padding-bottom: 1px;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .gcal-link:hover {
+      color: var(--abby-red);
+      border-color: var(--abby-red);
+    }
 
     /* ---------- ADMIN VIEW ---------- */
     .admin { display: none; }
@@ -812,6 +832,10 @@
           <div><span>Time</span><span id="confTime"></span></div>
           <div><span>Stand</span><span>Stand 10</span></div>
           <div><span>Venue</span><span>Viaduct Events Centre, Auckland</span></div>
+        </div>
+        <div class="confirm-actions">
+          <button type="button" class="btn btn-primary" id="downloadIcsBtn">Add to calendar</button>
+          <a class="gcal-link" id="gcalLink" href="#" target="_blank" rel="noopener">Add to Google Calendar</a>
         </div>
         <p class="contact">If anything changes, just email <a href="mailto:welcome@cheersabby.com">welcome@cheersabby.com</a> and we will sort it.</p>
       </div>
@@ -1075,19 +1099,147 @@
         phone: phone,
         timestamp: new Date().toISOString()
       });
-      showConfirmation(firstName, email);
+      showConfirmation(firstName, lastName, firm);
     });
 
-    function showConfirmation(firstName, email) {
+    function showConfirmation(firstName, lastName, firm) {
       document.getElementById('confDay').textContent = dayLabel(state.day);
       document.getElementById('confTime').textContent = timeLabel(state.time) + ' NZT';
       document.getElementById('confirmHeading').textContent = 'Thanks ' + firstName + ', you are booked in.';
       document.getElementById('confirmBody').textContent =
-        'We will see you at the Abby stand for a quick 15-minute demo. A confirmation with all the details is on its way to ' + email + '.';
+        'We will see you at the Abby stand for a quick 15-minute demo. Add it to your calendar below.';
+
+      var booking = buildBookingEvent(state.day, state.time, firstName, lastName, firm);
+      document.getElementById('gcalLink').href = buildGoogleCalendarUrl(booking);
+      var icsBtn = document.getElementById('downloadIcsBtn');
+      icsBtn.onclick = function () { downloadIcs(booking); };
+
       calendarCard.style.display = 'none';
       formPanel.style.display = 'none';
       confirmCard.classList.add('show');
       confirmCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ------------------------------------------------------------------
+    // Calendar invite generation (ICS download + Google Calendar link)
+    // ------------------------------------------------------------------
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+    function fmtUtcCompact(d) {
+      return d.getUTCFullYear() +
+        pad2(d.getUTCMonth() + 1) +
+        pad2(d.getUTCDate()) + 'T' +
+        pad2(d.getUTCHours()) +
+        pad2(d.getUTCMinutes()) +
+        pad2(d.getUTCSeconds()) + 'Z';
+    }
+
+    function addMinutesToLocalStamp(local, minutes) {
+      // local: 'YYYYMMDDTHHMMSS'
+      var y = parseInt(local.substr(0, 4), 10);
+      var m = parseInt(local.substr(4, 2), 10) - 1;
+      var d = parseInt(local.substr(6, 2), 10);
+      var hh = parseInt(local.substr(9, 2), 10);
+      var mm = parseInt(local.substr(11, 2), 10);
+      var t = Date.UTC(y, m, d, hh, mm) + minutes * 60 * 1000;
+      var e = new Date(t);
+      return e.getUTCFullYear() +
+        pad2(e.getUTCMonth() + 1) +
+        pad2(e.getUTCDate()) + 'T' +
+        pad2(e.getUTCHours()) +
+        pad2(e.getUTCMinutes()) + '00';
+    }
+
+    function icsEscape(s) {
+      return String(s == null ? '' : s)
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\r?\n/g, '\\n');
+    }
+
+    function buildBookingEvent(day, time, firstName, lastName, firm) {
+      // NZ demo dates fall in early September 2026, before DST starts on
+      // the last Sunday of September, so New Zealand is NZST (UTC+12).
+      // Anchor the ISO string to +12:00 so JS produces the correct UTC.
+      var start = new Date(day + 'T' + time + ':00+12:00');
+      var end = new Date(start.getTime() + 15 * 60 * 1000);
+      var startLocal = day.replace(/-/g, '') + 'T' + time.replace(':', '') + '00';
+      var endLocal = addMinutesToLocalStamp(startLocal, 15);
+      return {
+        title: 'Abby Demo at The GAP Auckland',
+        location: 'Stand 10, Viaduct Events Centre, Auckland',
+        description:
+          'Booking for ' + firstName + ' ' + lastName + ' (' + firm + ').\n' +
+          dayLabel(day) + ' at ' + timeLabel(time) + ' NZT.\n' +
+          'Stand 10, Viaduct Events Centre, Auckland.',
+        uid: day + '-' + time + '-' + Date.now() + '@abby-gap-auckland',
+        startLocal: startLocal,
+        endLocal: endLocal,
+        startUtc: fmtUtcCompact(start),
+        endUtc: fmtUtcCompact(end)
+      };
+    }
+
+    function buildIcs(booking) {
+      var stamp = fmtUtcCompact(new Date());
+      var lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Abby//Abby GAP Auckland//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VTIMEZONE',
+        'TZID:Pacific/Auckland',
+        'BEGIN:STANDARD',
+        'DTSTART:19700405T030000',
+        'RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU',
+        'TZOFFSETFROM:+1300',
+        'TZOFFSETTO:+1200',
+        'TZNAME:NZST',
+        'END:STANDARD',
+        'BEGIN:DAYLIGHT',
+        'DTSTART:19700927T020000',
+        'RRULE:FREQ=YEARLY;BYMONTH=9;BYDAY=-1SU',
+        'TZOFFSETFROM:+1200',
+        'TZOFFSETTO:+1300',
+        'TZNAME:NZDT',
+        'END:DAYLIGHT',
+        'END:VTIMEZONE',
+        'BEGIN:VEVENT',
+        'UID:' + booking.uid,
+        'DTSTAMP:' + stamp,
+        'DTSTART;TZID=Pacific/Auckland:' + booking.startLocal,
+        'DTEND;TZID=Pacific/Auckland:' + booking.endLocal,
+        'SUMMARY:' + icsEscape(booking.title),
+        'LOCATION:' + icsEscape(booking.location),
+        'DESCRIPTION:' + icsEscape(booking.description),
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ];
+      return lines.join('\r\n');
+    }
+
+    function buildGoogleCalendarUrl(booking) {
+      var qs = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: booking.title,
+        dates: booking.startUtc + '/' + booking.endUtc,
+        details: booking.description,
+        location: booking.location
+      });
+      return 'https://calendar.google.com/calendar/render?' + qs.toString();
+    }
+
+    function downloadIcs(booking) {
+      var blob = new Blob([buildIcs(booking)], { type: 'text/calendar;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'abby-demo-gap-auckland.ics';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
     }
 
     renderGrid();
@@ -1220,35 +1372,6 @@
         p.phone,
         p.notes
       ]);
-
-      // Create a 15-minute event on the default calendar. Set the
-      // Apps Script project timezone to "(GMT+12:00) Auckland" under
-      // Project Settings so p.selectedDate + p.selectedTime resolve
-      // to New Zealand local time.
-      var startDate = new Date(p.selectedDate + 'T' + p.selectedTime + ':00');
-      var endDate = new Date(startDate.getTime() + 15 * 60 * 1000);
-      var descLines = ['Email: ' + p.email];
-      if (p.notes) descLines.push('Notes: ' + p.notes);
-      CalendarApp.getDefaultCalendar().createEvent(
-        'Abby demo - ' + p.firstName + ' ' + p.lastName + ' (' + p.firm + ')',
-        startDate,
-        endDate,
-        {
-          location: 'Stand 10, Viaduct Events Centre, Auckland',
-          description: descLines.join('\n')
-        }
-      );
-
-      var subject = 'Your Abby demo is booked, ' + p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
-      var bodyAttendee =
-        'Hi ' + p.firstName + ',\n\n' +
-        'Thanks for booking a 15-minute Abby demo at GAP 2026.\n\n' +
-        'Day: ' + p.selectedDateLabel + '\n' +
-        'Time: ' + p.selectedTimeLabel + '\n' +
-        'Stand: ' + p.stand + '\n' +
-        'Venue: ' + p.venue + '\n\n' +
-        'See you there.\n\nThe Abby team\ncheersabby.com';
-      MailApp.sendEmail(p.email, subject, bodyAttendee);
 
       var notify =
         'New Abby demo booking at GAP.\n\n' +

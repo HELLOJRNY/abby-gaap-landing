@@ -1491,11 +1491,32 @@
         p.notes
       ]);
 
+      // Build a Google Calendar one-click add link for Corinne and Mark.
+      // NZ is NZST (UTC+12) for the September demo dates, so anchor the
+      // ISO string to +12:00 to derive the correct UTC times for the URL.
+      var pad2 = function (n) { return n < 10 ? '0' + n : '' + n; };
+      var fmtUtc = function (d) {
+        return d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate()) +
+          'T' + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + '00Z';
+      };
+      var startDate = new Date(p.selectedDate + 'T' + p.selectedTime + ':00+12:00');
+      var endDate = new Date(startDate.getTime() + 15 * 60 * 1000);
+      var gcalTitle = 'Abby demo - ' + p.firstName + ' ' + p.lastName;
+      var gcalDetails = p.firstName + ' ' + p.lastName + ' (' + p.firm + ')\n' +
+        p.email + (p.phone ? ' / ' + p.phone : '') +
+        (p.notes ? '\n\nNotes: ' + p.notes : '');
+      var gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+        '&text=' + encodeURIComponent(gcalTitle) +
+        '&dates=' + fmtUtc(startDate) + '/' + fmtUtc(endDate) +
+        '&details=' + encodeURIComponent(gcalDetails) +
+        '&location=' + encodeURIComponent('Stand 10, Viaduct Events Centre, Auckland');
+
       var notify =
         'New Abby demo booking at GAP.\n\n' +
         p.firstName + ' ' + p.lastName + ' (' + p.firm + ')\n' +
         p.email + ' / ' + p.phone + '\n' +
-        p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
+        p.selectedDateLabel + ' at ' + p.selectedTimeLabel + '\n\n' +
+        'Add to Google Calendar:\n' + gcalUrl;
       MailApp.sendEmail('corinne@cheersabby.com', 'New GAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
       MailApp.sendEmail('mark@cheersabby.com', 'New GAP demo booking, ' + p.firstName + ' ' + p.lastName, notify);
 

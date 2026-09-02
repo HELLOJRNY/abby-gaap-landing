@@ -1254,12 +1254,27 @@
           'Booking for ' + firstName + ' ' + lastName + ' (' + firm + ').\n' +
           dayLabel(day) + ' at ' + timeLabel(time) + ' NZT.\n' +
           'Stand 10, Viaduct Events Centre, Auckland.',
-        uid: day + '-' + time + '-' + Date.now() + '@abby-gap-auckland',
+        // Stable UID keyed to the slot so a re-download of the same booking
+        // updates the same calendar event instead of creating a duplicate.
+        uid: day + '-' + time + '@abby-gap-auckland',
         startLocal: startLocal,
         endLocal: endLocal,
         startUtc: fmtUtcCompact(start),
         endUtc: fmtUtcCompact(end)
       };
+    }
+
+    function foldIcsLine(line) {
+      // RFC 5545: fold lines longer than 75 octets by inserting CRLF + space.
+      if (line.length <= 75) return line;
+      var out = line.slice(0, 75);
+      var rest = line.slice(75);
+      while (rest.length > 74) {
+        out += '\r\n ' + rest.slice(0, 74);
+        rest = rest.slice(74);
+      }
+      if (rest.length) out += '\r\n ' + rest;
+      return out;
     }
 
     function buildIcs(booking) {
@@ -1270,6 +1285,8 @@
         'PRODID:-//Abby//Abby GAP Auckland//EN',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
+        'X-WR-CALNAME:Abby demo at The GAP Auckland',
+        'X-WR-TIMEZONE:Pacific/Auckland',
         'BEGIN:VTIMEZONE',
         'TZID:Pacific/Auckland',
         'BEGIN:STANDARD',
@@ -1292,13 +1309,16 @@
         'DTSTAMP:' + stamp,
         'DTSTART;TZID=Pacific/Auckland:' + booking.startLocal,
         'DTEND;TZID=Pacific/Auckland:' + booking.endLocal,
+        'SEQUENCE:0',
+        'STATUS:CONFIRMED',
+        'TRANSP:OPAQUE',
         'SUMMARY:' + icsEscape(booking.title),
         'LOCATION:' + icsEscape(booking.location),
         'DESCRIPTION:' + icsEscape(booking.description),
         'END:VEVENT',
         'END:VCALENDAR'
       ];
-      return lines.join('\r\n');
+      return lines.map(foldIcsLine).join('\r\n') + '\r\n';
     }
 
     function buildGoogleCalendarUrl(booking) {
@@ -1458,7 +1478,11 @@
         if (cal === 'google') {
           window.open(buildGoogleCalendarUrl(currentBooking), '_blank', 'noopener,noreferrer');
         } else if (cal === 'outlook') {
+          // Open outlook.live.com for personal Outlook accounts and also
+          // download the .ics so desktop Outlook / Office 365 users can
+          // open the event with a double-click as a universal fallback.
           window.open(buildOutlookCalendarUrl(currentBooking), '_blank', 'noopener,noreferrer');
+          downloadIcs(currentBooking);
         } else if (cal === 'apple') {
           downloadIcs(currentBooking);
         }

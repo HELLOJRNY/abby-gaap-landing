@@ -571,21 +571,62 @@
       margin-top: 24px;
       display: flex;
       flex-wrap: wrap;
-      gap: 18px;
+      gap: 12px;
       align-items: center;
     }
-    .gcal-link {
-      color: var(--ink-soft);
+    .cal-menu {
+      position: relative;
+      display: inline-block;
+    }
+    .cal-menu-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cal-caret {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.15s ease;
+    }
+    .cal-menu.open .cal-caret { transform: rotate(180deg); }
+    .cal-menu-list {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 220px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-card);
+      padding: 6px;
+      z-index: 20;
+    }
+    .cal-menu.open .cal-menu-list { display: block; }
+    .cal-menu-item {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      text-align: left;
+      font-family: var(--font-body);
       font-size: 14px;
       font-weight: 500;
-      text-decoration: none;
-      border-bottom: 1px solid var(--line-strong);
-      padding-bottom: 1px;
-      transition: color 0.15s ease, border-color 0.15s ease;
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 0.12s ease;
     }
-    .gcal-link:hover {
-      color: var(--abby-red);
-      border-color: var(--abby-red);
+    .cal-menu-item:hover,
+    .cal-menu-item:focus-visible {
+      background: var(--page);
+      outline: none;
     }
 
     /* ---------- ADMIN VIEW ---------- */
@@ -834,8 +875,18 @@
           <div><span>Venue</span><span>Viaduct Events Centre, Auckland</span></div>
         </div>
         <div class="confirm-actions">
-          <button type="button" class="btn btn-primary" id="downloadIcsBtn">Add to calendar</button>
-          <a class="gcal-link" id="gcalLink" href="#" target="_blank" rel="noopener">Add to Google Calendar</a>
+          <div class="cal-menu" id="calMenu">
+            <button type="button" class="btn btn-primary cal-menu-btn" id="calMenuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="calMenuList">
+              <span>Add to calendar</span>
+              <svg class="cal-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="cal-menu-list" id="calMenuList" role="menu">
+              <button type="button" class="cal-menu-item" role="menuitem" data-cal="google">Google Calendar</button>
+              <button type="button" class="cal-menu-item" role="menuitem" data-cal="apple">Apple Calendar</button>
+              <button type="button" class="cal-menu-item" role="menuitem" data-cal="outlook">Outlook</button>
+              <button type="button" class="cal-menu-item" role="menuitem" data-cal="ics">Other (.ics file)</button>
+            </div>
+          </div>
         </div>
         <p class="contact">If anything changes, just email <a href="mailto:welcome@cheersabby.com">welcome@cheersabby.com</a> and we will sort it.</p>
       </div>
@@ -1102,6 +1153,8 @@
       showConfirmation(firstName, lastName, firm);
     });
 
+    var currentBooking = null;
+
     function showConfirmation(firstName, lastName, firm) {
       document.getElementById('confDay').textContent = dayLabel(state.day);
       document.getElementById('confTime').textContent = timeLabel(state.time) + ' NZT';
@@ -1109,10 +1162,7 @@
       document.getElementById('confirmBody').textContent =
         'We will see you at the Abby stand for a quick 15-minute demo. Add it to your calendar below.';
 
-      var booking = buildBookingEvent(state.day, state.time, firstName, lastName, firm);
-      document.getElementById('gcalLink').href = buildGoogleCalendarUrl(booking);
-      var icsBtn = document.getElementById('downloadIcsBtn');
-      icsBtn.onclick = function () { downloadIcs(booking); };
+      currentBooking = buildBookingEvent(state.day, state.time, firstName, lastName, firm);
 
       calendarCard.style.display = 'none';
       formPanel.style.display = 'none';
@@ -1231,6 +1281,25 @@
       return 'https://calendar.google.com/calendar/render?' + qs.toString();
     }
 
+    function isoFromCompactUtc(compact) {
+      // 'YYYYMMDDTHHMMSSZ' -> 'YYYY-MM-DDTHH:MM:SSZ'
+      return compact.slice(0, 4) + '-' + compact.slice(4, 6) + '-' + compact.slice(6, 8) +
+        'T' + compact.slice(9, 11) + ':' + compact.slice(11, 13) + ':' + compact.slice(13, 15) + 'Z';
+    }
+
+    function buildOutlookCalendarUrl(booking) {
+      var qs = new URLSearchParams({
+        path: '/calendar/action/compose',
+        rru: 'addevent',
+        subject: booking.title,
+        startdt: isoFromCompactUtc(booking.startUtc),
+        enddt: isoFromCompactUtc(booking.endUtc),
+        body: booking.description,
+        location: booking.location
+      });
+      return 'https://outlook.live.com/calendar/0/deeplink/compose?' + qs.toString();
+    }
+
     function downloadIcs(booking) {
       var blob = new Blob([buildIcs(booking)], { type: 'text/calendar;charset=utf-8;' });
       var url = URL.createObjectURL(blob);
@@ -1347,6 +1416,55 @@
       var exportBtn = document.getElementById('exportCsvBtn');
       if (exportBtn) exportBtn.addEventListener('click', downloadBookingsCsv);
     }
+
+    // ------------------------------------------------------------------
+    // Calendar dropdown (Google, Apple, Outlook, Other)
+    // ------------------------------------------------------------------
+    var calMenu = document.getElementById('calMenu');
+    var calMenuBtn = document.getElementById('calMenuBtn');
+    var calMenuList = document.getElementById('calMenuList');
+
+    function closeCalMenu() {
+      calMenu.classList.remove('open');
+      calMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+    function toggleCalMenu() {
+      var open = calMenu.classList.toggle('open');
+      calMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    calMenuBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggleCalMenu();
+    });
+
+    calMenuList.addEventListener('click', function (e) {
+      var target = e.target.closest('[data-cal]');
+      if (!target || !currentBooking) return;
+      var cal = target.getAttribute('data-cal');
+      if (cal === 'google') {
+        window.open(buildGoogleCalendarUrl(currentBooking), '_blank', 'noopener,noreferrer');
+      } else if (cal === 'outlook') {
+        window.open(buildOutlookCalendarUrl(currentBooking), '_blank', 'noopener,noreferrer');
+      } else if (cal === 'apple' || cal === 'ics') {
+        downloadIcs(currentBooking);
+      }
+      closeCalMenu();
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!calMenu.contains(e.target)) closeCalMenu();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeCalMenu();
+    });
+
+    // ------------------------------------------------------------------
+    // Cross-tab sync: keep booked slots in step if another tab writes.
+    // ------------------------------------------------------------------
+    window.addEventListener('storage', function (e) {
+      if (e.key === STORAGE_KEY) renderGrid();
+    });
   </script>
 
   <!--

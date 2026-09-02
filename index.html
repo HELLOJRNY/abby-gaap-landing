@@ -1221,6 +1221,24 @@
         p.notes
       ]);
 
+      // Create a 15-minute event on the default calendar. Set the
+      // Apps Script project timezone to "(GMT+12:00) Auckland" under
+      // Project Settings so p.selectedDate + p.selectedTime resolve
+      // to New Zealand local time.
+      var startDate = new Date(p.selectedDate + 'T' + p.selectedTime + ':00');
+      var endDate = new Date(startDate.getTime() + 15 * 60 * 1000);
+      var descLines = ['Email: ' + p.email];
+      if (p.notes) descLines.push('Notes: ' + p.notes);
+      CalendarApp.getDefaultCalendar().createEvent(
+        'Abby demo - ' + p.firstName + ' ' + p.lastName + ' (' + p.firm + ')',
+        startDate,
+        endDate,
+        {
+          location: 'Stand 10, Viaduct Events Centre, Auckland',
+          description: descLines.join('\n')
+        }
+      );
+
       var subject = 'Your Abby demo is booked, ' + p.selectedDateLabel + ' at ' + p.selectedTimeLabel;
       var bodyAttendee =
         'Hi ' + p.firstName + ',\n\n' +

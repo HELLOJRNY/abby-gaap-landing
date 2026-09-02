@@ -1511,27 +1511,82 @@
     ============================================================
     Google Apps Script backend (set up separately)
     ============================================================
-    Paste the following into the Google Apps Script editor, then
-    Deploy as Web app with access set to "Anyone". Copy the /exec
-    URL and replace the APPS_SCRIPT_URL value at the top of the
-    <script> block above.
+    Setup steps:
+      1. Paste the code below into the Google Apps Script editor.
+      2. Project Settings (gear icon) > Script properties > Add a
+         property named RESEND_API_KEY and paste the Resend key as
+         the value. The key is read at runtime from Script
+         properties so it never appears in this file or in git.
+      3. Deploy > New deployment > Web app, access "Anyone".
+      4. Copy the /exec URL and set APPS_SCRIPT_URL at the top of
+         the <script> block above.
+      5. On first run, Google will prompt for authorisation for
+         Sheets and External requests (UrlFetchApp). Accept both.
 
-    The script writes each booking as a row on the Sheet whose ID
-    is embedded below and creates a 15-minute event on the default
-    calendar of the account that owns the deployment.
-
-    Required scopes on first deploy: Google Sheets and Google
-    Calendar. No Gmail scope is used.
+    What the script does on each booking:
+      - Appends a row to the target Sheet (openById).
+      - Calls Resend from the server to send a confirmation to the
+        attendee (from corinne@cheersabby.com).
+      - Calls Resend again to send a notification. The recipient is
+        currently molly@letsjourney.io for testing.
+      TODO: change the notification recipient back to
+      corinne@cheersabby.com and mark@cheersabby.com before go live.
 
     function doPost(e) {
       try {
         var sheet = SpreadsheetApp.openById('1KRE8XIWhDHRQJGP14VNvwzO6i_NZifzhqhSFAWXC7MY').getActiveSheet();
         var p = e.parameter;
         sheet.appendRow([p.timestamp, p.selectedDateLabel, p.selectedTimeLabel, p.firstName, p.lastName, p.firm, p.email, p.notes]);
-        var cal = CalendarApp.getDefaultCalendar();
-        var start = new Date(p.selectedDate + 'T' + p.selectedTime + ':00+12:00');
-        var end = new Date(start.getTime() + 15 * 60000);
-        cal.createEvent('Abby demo - ' + p.firstName + ' ' + p.lastName + ' (' + p.firm + ')', start, end, {location: 'Stand 10, Viaduct Events Centre, Auckland', description: p.email + '\n' + (p.notes || '')});
+
+        var RESEND_API_KEY = PropertiesService.getScriptProperties().getProperty('RESEND_API_KEY');
+        if (!RESEND_API_KEY) throw new Error('Missing script property RESEND_API_KEY');
+
+        var attendeeText =
+          'Hi ' + p.firstName + ',\n\n' +
+          'Your 15-minute Abby demo is confirmed.\n\n' +
+          'Day: ' + p.selectedDateLabel + '\n' +
+          'Time: ' + p.selectedTimeLabel + ' NZT\n' +
+          'Location: Stand 10, Viaduct Events Centre, Auckland\n\n' +
+          'We look forward to seeing you.\n\n' +
+          'Corinne and Mark, Abby';
+
+        var notificationText =
+          'New Abby demo booking at GAP.\n\n' +
+          p.firstName + ' ' + p.lastName + ' (' + p.firm + ')\n' +
+          p.email + (p.phone ? ' / ' + p.phone : '') + '\n' +
+          p.selectedDateLabel + ' at ' + p.selectedTimeLabel + ' NZT\n' +
+          'Stand 10, Viaduct Events Centre, Auckland' +
+          (p.notes ? '\n\nNotes: ' + p.notes : '');
+
+        function sendResend(payload) {
+          return UrlFetchApp.fetch('https://api.resend.com/emails', {
+            method: 'post',
+            contentType: 'application/json',
+            headers: { 'Authorization': 'Bearer ' + RESEND_API_KEY },
+            payload: JSON.stringify(payload),
+            muteHttpExceptions: true
+          });
+        }
+
+        // 1. Confirmation to the attendee.
+        var attendeeResponse = sendResend({
+          from: 'corinne@cheersabby.com',
+          to: [p.email],
+          subject: 'Your Abby demo is booked at The GAP Auckland',
+          text: attendeeText
+        });
+        Logger.log('Resend attendee: ' + attendeeResponse.getResponseCode() + ' ' + attendeeResponse.getContentText());
+
+        // 2. Notification. Routed to Molly for testing.
+        // TODO: change back to corinne and mark before go live
+        var notificationResponse = sendResend({
+          from: 'corinne@cheersabby.com',
+          to: ['molly@letsjourney.io'],
+          subject: 'New GAP demo booking - ' + p.firstName + ' ' + p.lastName,
+          text: notificationText
+        });
+        Logger.log('Resend notification: ' + notificationResponse.getResponseCode() + ' ' + notificationResponse.getContentText());
+
         return ContentService.createTextOutput('ok');
       } catch(err) {
         Logger.log(err.toString());

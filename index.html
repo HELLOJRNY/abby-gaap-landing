@@ -1022,17 +1022,22 @@
     }
 
     function fetchRemoteBooked() {
+      // Regular fetch (default mode 'cors') so we can read the response.
       return fetch(APPS_SCRIPT_URL, { method: 'GET' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
+          var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
           var next = {};
-          Object.keys(data || {}).forEach(function (day) {
-            if (!data[day] || !data[day].length) return;
-            next[day] = {};
-            data[day].forEach(function (time) { next[day][time] = true; });
+          arr.forEach(function (key) {
+            // key format: 'YYYY-MM-DD-HH:mm'  e.g. '2026-09-10-09:00'
+            if (typeof key !== 'string' || key.length < 12) return;
+            var day = key.substring(0, 10);
+            var time = key.substring(11);
+            if (!next[day]) next[day] = {};
+            next[day][time] = true;
           });
           remoteBooked = next;
-          console.log('[Abby booking] Sheet booked slots loaded:', remoteBooked);
+          console.log('[Abby booking] Sheet booked slots loaded:', arr.length, arr);
           renderGrid();
         })
         .catch(function (err) {
@@ -1568,29 +1573,32 @@
         corinne@cheersabby.com and mark@cheersabby.com before go live.
 
       doGet (on every page load):
-        - Reads the Sheet and returns a JSON map of booked slots:
-          { "2026-09-10": ["09:30", "09:45"], "2026-09-11": ["10:00"] }
+        - Reads the Sheet and returns a flat JSON list of booked
+          slot keys: { "booked": ["2026-09-10-09:00", "2026-09-11-10:15"] }
+        - Each key is 'YYYY-MM-DD-HH:mm', where the first ten chars
+          are the ISO date and the rest is the 24-hour time.
         - The client uses this as the source of truth so every
-          visitor sees the same greyed-out slots.
+          visitor (including incognito and other browsers) sees the
+          same greyed-out slots.
 
     function doGet() {
       try {
         var sheet = SpreadsheetApp.openById('1KRE8XIWhDHRQJGP14VNvwzO6i_NZifzhqhSFAWXC7MY').getActiveSheet();
         var rows = sheet.getDataRange().getValues();
-        var booked = {};
+        var booked = [];
         for (var i = 0; i < rows.length; i++) {
           var row = rows[i];
           var day = labelToDate(row[1]);   // column B: selectedDateLabel
           var time = labelToTime(row[2]);  // column C: selectedTimeLabel
           if (!day || !time) continue;     // skips header row and any blanks
-          if (!booked[day]) booked[day] = [];
-          if (booked[day].indexOf(time) === -1) booked[day].push(time);
+          var key = day + '-' + time;
+          if (booked.indexOf(key) === -1) booked.push(key);
         }
-        return ContentService.createTextOutput(JSON.stringify(booked))
+        return ContentService.createTextOutput(JSON.stringify({ booked: booked }))
           .setMimeType(ContentService.MimeType.JSON);
       } catch(err) {
         Logger.log(err.toString());
-        return ContentService.createTextOutput(JSON.stringify({ error: err.toString() }))
+        return ContentService.createTextOutput(JSON.stringify({ booked: [], error: err.toString() }))
           .setMimeType(ContentService.MimeType.JSON);
       }
     }

@@ -984,65 +984,62 @@
     }
 
     // ------------------------------------------------------------------
-    // Storage
+    // Slot availability (source of truth: Apps Script doGet)
     // ------------------------------------------------------------------
-    // Booked slots come from two sources:
-    //   1. remoteBooked - the Google Sheet, fetched via Apps Script doGet
-    //      on page load. This is the primary source of truth so every
-    //      visitor (including incognito and other browsers) sees the
-    //      same set of taken slots.
-    //   2. localBooked (localStorage) - fallback for instant feedback
-    //      the moment this browser makes a booking, before the Sheet
-    //      has propagated back through doGet.
-    // isBooked() returns true if either source knows about the slot.
+    // bookedSlots is an in-memory Set of keys shaped 'YYYY-MM-DD|HH:mm'
+    // e.g. '2026-09-10|08:30'. It is populated on page load from the
+    // sheet via fetchBookedSlots(), and augmented in-memory the moment
+    // the current browser posts a booking. localStorage is NOT consulted
+    // to determine whether a slot is taken.
+    var bookedSlots = new Set();
+
+    function slotKey(day, time) {
+      return day + '|' + time;
+    }
+    function isBooked(day, time) {
+      return bookedSlots.has(slotKey(day, time));
+    }
+    function markSlotBooked(day, time) {
+      bookedSlots.add(slotKey(day, time));
+    }
+
+    function fetchBookedSlots() {
+      // Regular fetch (default mode 'cors') so we can read the response
+      // from Apps Script /exec. doGet returns { booked: [...] }.
+      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
+          bookedSlots = new Set(arr);
+          console.log('[Abby booking] Sheet booked slots loaded:', arr.length, arr);
+          renderGrid();
+        })
+        .catch(function (err) {
+          console.error('[Abby booking] Failed to load booked slots from sheet:', err);
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // localStorage (used only for the admin view, never for slot state)
+    // ------------------------------------------------------------------
+    // The admin table at ?admin lists bookings made from this browser.
+    // Slot availability does NOT read from here.
     var STORAGE_KEY = 'abby_gaap_bookings_v1';
-    var remoteBooked = {};
-    function loadBooked() {
+    function loadBookingRecords() {
       try {
         var raw = localStorage.getItem(STORAGE_KEY);
         return raw ? JSON.parse(raw) : {};
       } catch (e) { return {}; }
     }
-    function saveBooked(map) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
-    }
-    function isBooked(day, time) {
-      var local = loadBooked();
-      if (local[day] && local[day][time]) return true;
-      if (remoteBooked[day] && remoteBooked[day][time]) return true;
-      return false;
-    }
-    function markBooked(day, time, record) {
-      var map = loadBooked();
-      if (!map[day]) map[day] = {};
-      record = record || {};
-      if (!record.timestamp) record.timestamp = new Date().toISOString();
-      map[day][time] = record;
-      saveBooked(map);
-    }
-
-    function fetchRemoteBooked() {
-      // Regular fetch (default mode 'cors') so we can read the response.
-      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
-          var next = {};
-          arr.forEach(function (key) {
-            // key format: 'YYYY-MM-DD-HH:mm'  e.g. '2026-09-10-09:00'
-            if (typeof key !== 'string' || key.length < 12) return;
-            var day = key.substring(0, 10);
-            var time = key.substring(11);
-            if (!next[day]) next[day] = {};
-            next[day][time] = true;
-          });
-          remoteBooked = next;
-          console.log('[Abby booking] Sheet booked slots loaded:', arr.length, arr);
-          renderGrid();
-        })
-        .catch(function (err) {
-          console.error('[Abby booking] Failed to load booked slots from sheet, falling back to localStorage:', err);
-        });
+    function saveBookingRecord(day, time, record) {
+      try {
+        var map = loadBookingRecords();
+        if (!map[day]) map[day] = {};
+        record = record || {};
+        if (!record.timestamp) record.timestamp = new Date().toISOString();
+        map[day][time] = record;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {}
     }
 
     // ------------------------------------------------------------------
@@ -1202,7 +1199,14 @@
         console.error('[Abby booking] Fetch failed:', err);
       });
 
-      markBooked(state.day, state.time, {
+      // Grey out the slot in the UI immediately using the same key
+      // format the sheet returns on the next page load.
+      markSlotBooked(state.day, state.time);
+      renderGrid();
+
+      // Persist a full record locally so the admin view (?admin) can
+      // show what this browser has booked. NOT used for slot state.
+      saveBookingRecord(state.day, state.time, {
         firstName: firstName,
         lastName: lastName,
         firm: firm,
@@ -1210,6 +1214,7 @@
         phone: phone,
         timestamp: new Date().toISOString()
       });
+
       showConfirmation(firstName, lastName, firm);
     });
 
@@ -1398,10 +1403,10 @@
       setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
     }
 
-    // Instant paint from localStorage, then override with the Sheet's
-    // canonical set of booked slots once doGet responds.
+    // Render the empty grid immediately, then fetch the canonical set
+    // of booked slots from the sheet via Apps Script doGet and re-render.
     renderGrid();
-    fetchRemoteBooked();
+    fetchBookedSlots();
 
     // ------------------------------------------------------------------
     // Admin view (accessible via ?admin in the URL)
@@ -1411,7 +1416,7 @@
     }
 
     function collectBookingRows() {
-      var map = loadBooked();
+      var map = loadBookingRecords();
       var rows = [];
       Object.keys(map).sort().forEach(function (day) {
         Object.keys(map[day]).sort().forEach(function (time) {
@@ -1539,10 +1544,12 @@
     }
 
     // ------------------------------------------------------------------
-    // Cross-tab sync: keep booked slots in step if another tab writes.
+    // Refresh slot availability from the sheet whenever the tab becomes
+    // visible again, so a slot booked in another window during this
+    // session becomes greyed here without a manual refresh.
     // ------------------------------------------------------------------
-    window.addEventListener('storage', function (e) {
-      if (e.key === STORAGE_KEY) renderGrid();
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') fetchBookedSlots();
     });
   </script>
 
@@ -1574,9 +1581,9 @@
 
       doGet (on every page load):
         - Reads the Sheet and returns a flat JSON list of booked
-          slot keys: { "booked": ["2026-09-10-09:00", "2026-09-11-10:15"] }
-        - Each key is 'YYYY-MM-DD-HH:mm', where the first ten chars
-          are the ISO date and the rest is the 24-hour time.
+          slot keys: { "booked": ["2026-09-10|09:00", "2026-09-11|10:15"] }
+        - Each key is 'YYYY-MM-DD|HH:mm' (pipe separator). The
+          format is used verbatim by the client Set on the browser.
         - The client uses this as the source of truth so every
           visitor (including incognito and other browsers) sees the
           same greyed-out slots.
@@ -1591,7 +1598,7 @@
           var day = labelToDate(row[0]);   // column A: selectedDateLabel
           var time = labelToTime(row[1]);  // column B: selectedTimeLabel
           if (!day || !time) continue;     // skips header row and any blanks
-          var key = day + '-' + time;
+          var key = day + '|' + time;
           if (booked.indexOf(key) === -1) booked.push(key);
         }
         return ContentService.createTextOutput(JSON.stringify({ booked: booked }))

@@ -1121,19 +1121,25 @@
 
     // Returns a Promise<string[]> of booked slot keys, using the CSV
     // URL when configured, otherwise falling back to Apps Script doGet.
-    function fetchBookedKeys() {
+    // Accepts an optional { signal } AbortSignal so the caller can
+    // cancel a stalled fetch.
+    function fetchBookedKeys(options) {
+      options = options || {};
+      var fetchOpts = { method: 'GET' };
+      if (options.signal) fetchOpts.signal = options.signal;
       if (hasCsvUrl()) {
         // cache: 'no-cache' asks the browser to revalidate. Google's
         // published CSV endpoint has short cache lifetimes anyway
         // (typically ~5 min propagation).
-        return fetch(PUBLISHED_CSV_URL + '&t=' + Date.now(), { method: 'GET', cache: 'no-cache' })
+        fetchOpts.cache = 'no-cache';
+        return fetch(PUBLISHED_CSV_URL + '&t=' + Date.now(), fetchOpts)
           .then(function (r) { return r.text(); })
           .then(function (csvText) {
             console.log('[Abby booking] Booked keys sourced from CSV');
             return csvToBookedKeys(csvText);
           });
       }
-      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
+      return fetch(APPS_SCRIPT_URL, fetchOpts)
         .then(function (r) { return r.json(); })
         .then(function (data) {
           console.log('[Abby booking] Booked keys sourced from Apps Script doGet');
@@ -1150,14 +1156,16 @@
       });
     }
 
-    // Initial load: fetch first, then render. Show the spinner in the
-    // calendar card until the response resolves. If the fetch takes
-    // longer than 10 seconds we render with localStorage as a fallback
-    // so the visitor is not blocked, but the fetch stays in flight -
-    // if the server responds later we replace those slots and re-render
-    // so they still get greyed out.
+    // Initial load: fetch first, then render. The spinner in the
+    // calendar card stays visible until the fetch resolves. If the
+    // fetch takes longer than 10 seconds we cancel it and render with
+    // localStorage as a fallback so the visitor is not blocked. The
+    // cancellation guarantees the grid is painted exactly once, so
+    // slots cannot appear available and then flip to booked.
     function initSlots() {
       var rendered = false; // whether we have already painted a grid
+      var abortController = (typeof AbortController !== 'undefined')
+        ? new AbortController() : null;
 
       function markReady() {
         if (rendered) return;
@@ -1167,14 +1175,16 @@
 
       var timeoutId = setTimeout(function () {
         if (rendered) return;
-        console.warn('[Abby booking] Sheet fetch slow (>10s). Rendering with localStorage now; server response will still be applied when it arrives.');
+        if (abortController) abortController.abort();
+        console.warn('[Abby booking] Sheet fetch timed out after 10s. Rendering with localStorage fallback and cancelling the fetch.');
         absorbLocalStorageBookings();
         renderGrid();
         markReady();
       }, 10000);
 
-      fetchBookedKeys()
+      fetchBookedKeys({ signal: abortController ? abortController.signal : undefined })
         .then(function (arr) {
+          if (rendered) return; // timeout already painted; discard late data
           clearTimeout(timeoutId);
 
           // -----------------------------------------------------------
@@ -1207,18 +1217,13 @@
           sessionBooked.forEach(function (k) { next.add(k); });
           bookedSlots = next;
 
-          if (rendered) {
-            console.log('[Abby booking] Late server response applied after timeout fallback');
-          }
           renderGrid();
           markReady();
         })
         .catch(function (err) {
           clearTimeout(timeoutId);
-          if (rendered) {
-            console.error('[Abby booking] Late Sheet fetch failed after fallback render:', err);
-            return;
-          }
+          if (rendered) return; // timeout already painted; swallow
+          if (err && err.name === 'AbortError') return; // cancelled by timeout
           console.error('[Abby booking] Sheet fetch failed, falling back to localStorage:', err);
           absorbLocalStorageBookings();
           renderGrid();

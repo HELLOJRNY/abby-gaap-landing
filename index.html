@@ -318,6 +318,28 @@
       box-shadow: var(--shadow-card);
       padding: 28px;
     }
+    .cal-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 72px 20px;
+      color: var(--ink-soft);
+      font-size: 14.5px;
+      font-weight: 500;
+    }
+    .cal-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.12);
+      border-top-color: var(--abby-red);
+      border-radius: 50%;
+      animation: cal-spin 0.7s linear infinite;
+    }
+    @keyframes cal-spin { to { transform: rotate(360deg); } }
+    #calendarCard .session { display: none; }
+    #calendarCard.cal-ready .cal-loading { display: none; }
+    #calendarCard.cal-ready .session { display: block; }
     .session + .session {
       margin-top: 22px;
       padding-top: 22px;
@@ -830,6 +852,10 @@
       </div>
 
       <div class="calendar" id="calendarCard">
+        <div class="cal-loading" id="calLoading" role="status" aria-live="polite">
+          <span class="cal-spinner" aria-hidden="true"></span>
+          <span>Loading available times</span>
+        </div>
         <div class="session">
           <p class="session-label">Morning</p>
           <div class="grid" id="gridMorning"></div>
@@ -992,6 +1018,10 @@
     // the current browser posts a booking. localStorage is NOT consulted
     // to determine whether a slot is taken.
     var bookedSlots = new Set();
+    // Slots this browser marked during the current session. Preserved
+    // across refresh fetches so a just-booked slot never flickers back
+    // to available if the sheet has not yet propagated.
+    var sessionBooked = new Set();
 
     function slotKey(day, time) {
       return day + '|' + time;
@@ -1000,22 +1030,75 @@
       return bookedSlots.has(slotKey(day, time));
     }
     function markSlotBooked(day, time) {
-      bookedSlots.add(slotKey(day, time));
+      var key = slotKey(day, time);
+      bookedSlots.add(key);
+      sessionBooked.add(key);
     }
 
-    function fetchBookedSlots() {
-      // Regular fetch (default mode 'cors') so we can read the response
-      // from Apps Script /exec. doGet returns { booked: [...] }.
-      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
+    function absorbLocalStorageBookings() {
+      var records = loadBookingRecords();
+      Object.keys(records).forEach(function (day) {
+        Object.keys(records[day] || {}).forEach(function (time) {
+          bookedSlots.add(slotKey(day, time));
+        });
+      });
+    }
+
+    // Initial load: fetch first, then render. Show a spinner in the
+    // calendar card until the response (or timeout) resolves. If the
+    // fetch fails or takes longer than 3 seconds, fall back to any
+    // bookings recorded in this browser's localStorage and render.
+    function initSlots() {
+      var settled = false;
+      var timeoutId = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        console.warn('[Abby booking] Sheet fetch timed out after 3s, falling back to localStorage');
+        absorbLocalStorageBookings();
+        renderGrid();
+        calendarCard.classList.add('cal-ready');
+      }, 3000);
+
+      fetch(APPS_SCRIPT_URL, { method: 'GET' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeoutId);
           var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
           bookedSlots = new Set(arr);
           console.log('[Abby booking] Sheet booked slots loaded:', arr.length, arr);
           renderGrid();
+          calendarCard.classList.add('cal-ready');
         })
         .catch(function (err) {
-          console.error('[Abby booking] Failed to load booked slots from sheet:', err);
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeoutId);
+          console.error('[Abby booking] Sheet fetch failed, falling back to localStorage:', err);
+          absorbLocalStorageBookings();
+          renderGrid();
+          calendarCard.classList.add('cal-ready');
+        });
+    }
+
+    // Silent refresh: no spinner, no timeout, no fallback. Merges any
+    // new booked slots from the sheet on top of what this session has
+    // already added, so a just-booked slot cannot flicker back to
+    // available if the sheet has not yet propagated.
+    function refreshBookedSlots() {
+      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
+          var merged = new Set(arr);
+          sessionBooked.forEach(function (k) { merged.add(k); });
+          bookedSlots = merged;
+          console.log('[Abby booking] Sheet booked slots refreshed:', arr.length);
+          renderGrid();
+        })
+        .catch(function (err) {
+          console.error('[Abby booking] Refresh fetch failed:', err);
         });
     }
 
@@ -1403,10 +1486,10 @@
       setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
     }
 
-    // Render the empty grid immediately, then fetch the canonical set
-    // of booked slots from the sheet via Apps Script doGet and re-render.
-    renderGrid();
-    fetchBookedSlots();
+    // Fetch the canonical set of booked slots from the sheet, THEN
+    // render. A loading spinner shows in the calendar card until the
+    // fetch settles or the 3s timeout fires.
+    initSlots();
 
     // ------------------------------------------------------------------
     // Admin view (accessible via ?admin in the URL)
@@ -1549,7 +1632,7 @@
     // session becomes greyed here without a manual refresh.
     // ------------------------------------------------------------------
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') fetchBookedSlots();
+      if (document.visibilityState === 'visible') refreshBookedSlots();
     });
   </script>
 

@@ -1147,21 +1147,13 @@
         });
     }
 
-    function absorbLocalStorageBookings() {
-      var records = loadBookingRecords();
-      Object.keys(records).forEach(function (day) {
-        Object.keys(records[day] || {}).forEach(function (time) {
-          bookedSlots.add(slotKey(day, time));
-        });
-      });
-    }
-
     // Initial load: fetch first, then render. The spinner in the
     // calendar card stays visible until the fetch resolves. If the
     // fetch takes longer than 10 seconds we cancel it and render with
-    // localStorage as a fallback so the visitor is not blocked. The
-    // cancellation guarantees the grid is painted exactly once, so
-    // slots cannot appear available and then flip to booked.
+    // whatever bookedSlots contains at that moment (which will be
+    // empty on a fresh page load, or hold only slots this session has
+    // just booked). localStorage is NOT read during rendering - the
+    // CSV is the single source of truth for availability.
     function initSlots() {
       var rendered = false; // whether we have already painted a grid
       var abortController = (typeof AbortController !== 'undefined')
@@ -1176,8 +1168,7 @@
       var timeoutId = setTimeout(function () {
         if (rendered) return;
         if (abortController) abortController.abort();
-        console.warn('[Abby booking] Sheet fetch timed out after 10s. Rendering with localStorage fallback and cancelling the fetch.');
-        absorbLocalStorageBookings();
+        console.warn('[Abby booking] Sheet fetch timed out after 10s. Rendering the grid without server availability data.');
         renderGrid();
         markReady();
       }, 10000);
@@ -1224,8 +1215,7 @@
           clearTimeout(timeoutId);
           if (rendered) return; // timeout already painted; swallow
           if (err && err.name === 'AbortError') return; // cancelled by timeout
-          console.error('[Abby booking] Sheet fetch failed, falling back to localStorage:', err);
-          absorbLocalStorageBookings();
+          console.error('[Abby booking] Sheet fetch failed. Rendering the grid without server availability data:', err);
           renderGrid();
           markReady();
         });

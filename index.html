@@ -1536,7 +1536,7 @@
       try {
         var sheet = SpreadsheetApp.openById('1KRE8XIWhDHRQJGP14VNvwzO6i_NZifzhqhSFAWXC7MY').getActiveSheet();
         var p = e.parameter;
-        sheet.appendRow([p.timestamp, p.selectedDateLabel, p.selectedTimeLabel, p.firstName, p.lastName, p.firm, p.email, p.notes]);
+        sheet.appendRow([p.timestamp, p.selectedDateLabel, p.selectedTimeLabel, p.firstName, p.lastName, p.firm, p.email, p.phone, p.notes]);
 
         var RESEND_API_KEY = PropertiesService.getScriptProperties().getProperty('RESEND_API_KEY');
         if (!RESEND_API_KEY) throw new Error('Missing script property RESEND_API_KEY');

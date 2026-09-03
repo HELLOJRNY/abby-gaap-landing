@@ -1046,27 +1046,32 @@
 
     // Initial load: fetch first, then render. Show a spinner in the
     // calendar card until the response (or timeout) resolves. If the
-    // fetch fails or takes longer than 3 seconds, fall back to any
-    // bookings recorded in this browser's localStorage and render.
+    // fetch takes longer than 8 seconds we render with localStorage
+    // as a fallback so the visitor isn't blocked, but the fetch stays
+    // in flight - if the server responds later we merge those slots
+    // in and re-render so they still get greyed out.
     function initSlots() {
-      var settled = false;
+      var rendered = false; // whether we have already painted a grid
+
+      function markReady() {
+        if (rendered) return;
+        rendered = true;
+        calendarCard.classList.add('cal-ready');
+      }
+
       var timeoutId = setTimeout(function () {
-        if (settled) return;
-        settled = true;
-        console.warn('[Abby booking] Sheet fetch timed out after 3s, falling back to localStorage');
+        if (rendered) return;
+        console.warn('[Abby booking] Sheet fetch slow (>8s). Rendering with localStorage now; server response will still be applied when it arrives.');
         absorbLocalStorageBookings();
         renderGrid();
-        calendarCard.classList.add('cal-ready');
-      }, 3000);
+        markReady();
+      }, 8000);
 
       fetch(APPS_SCRIPT_URL, { method: 'GET' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-          if (settled) return;
-          settled = true;
           clearTimeout(timeoutId);
           var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
-          bookedSlots = new Set(arr);
 
           // -----------------------------------------------------------
           // Debug: dump the sheet keys and the grid keys side by side.
@@ -1092,17 +1097,29 @@
             console.warn('[Abby booking] Sheet keys with NO matching grid slot:', unmatched);
           }
 
+          // Server is authoritative. Preserve session-booked so a slot
+          // this browser just booked stays greyed even if the sheet
+          // has not caught up yet.
+          var next = new Set(arr);
+          sessionBooked.forEach(function (k) { next.add(k); });
+          bookedSlots = next;
+
+          if (rendered) {
+            console.log('[Abby booking] Late server response applied after timeout fallback');
+          }
           renderGrid();
-          calendarCard.classList.add('cal-ready');
+          markReady();
         })
         .catch(function (err) {
-          if (settled) return;
-          settled = true;
           clearTimeout(timeoutId);
+          if (rendered) {
+            console.error('[Abby booking] Late Sheet fetch failed after fallback render:', err);
+            return;
+          }
           console.error('[Abby booking] Sheet fetch failed, falling back to localStorage:', err);
           absorbLocalStorageBookings();
           renderGrid();
-          calendarCard.classList.add('cal-ready');
+          markReady();
         });
     }
 

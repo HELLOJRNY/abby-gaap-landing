@@ -1067,7 +1067,31 @@
           clearTimeout(timeoutId);
           var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
           bookedSlots = new Set(arr);
-          console.log('[Abby booking] Sheet booked slots loaded:', arr.length, arr);
+
+          // -----------------------------------------------------------
+          // Debug: dump the sheet keys and the grid keys side by side.
+          // If Sheet keys and Grid keys overlap, greying works. If a
+          // sheet key does not appear in the grid list, the two sides
+          // are producing subtly different strings (whitespace, case,
+          // hyphen vs pipe, etc.).
+          // -----------------------------------------------------------
+          console.log('[Abby booking] Raw doGet response:', data);
+          console.log('[Abby booking] Sheet keys (' + arr.length + '):', arr);
+          var allGridKeys = [];
+          DAYS.forEach(function (d) {
+            SLOTS.morning.concat(SLOTS.afternoon).forEach(function (s) {
+              allGridKeys.push(slotKey(d.key, s.value));
+            });
+          });
+          console.log('[Abby booking] Grid keys (' + allGridKeys.length + '):', allGridKeys);
+          var gridSet = new Set(allGridKeys);
+          var matched = arr.filter(function (k) { return gridSet.has(k); });
+          var unmatched = arr.filter(function (k) { return !gridSet.has(k); });
+          console.log('[Abby booking] Matched keys (' + matched.length + '):', matched);
+          if (unmatched.length) {
+            console.warn('[Abby booking] Sheet keys with NO matching grid slot:', unmatched);
+          }
+
           renderGrid();
           calendarCard.classList.add('cal-ready');
         })
@@ -1695,21 +1719,21 @@
 
     function labelToDate(label) {
       if (!label) return null;
-      var months = { January: '01', February: '02', March: '03', April: '04', May: '05', June: '06', July: '07', August: '08', September: '09', October: '10', November: '11', December: '12' };
-      var m = String(label).match(/(\d{1,2})\s+(\w+)\s+(\d{4})/);
+      var months = { january: '01', february: '02', march: '03', april: '04', may: '05', june: '06', july: '07', august: '08', september: '09', october: '10', november: '11', december: '12' };
+      var m = String(label).trim().match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
       if (!m) return null;
       var day = m[1].length === 1 ? '0' + m[1] : m[1];
-      var month = months[m[2]];
+      var month = months[m[2].toLowerCase()];
       if (!month) return null;
       return m[3] + '-' + month + '-' + day;
     }
 
     function labelToTime(label) {
       if (!label) return null;
-      var m = String(label).match(/(\d+):(\d+)\s*(am|pm)/i);
+      var m = String(label).trim().match(/(\d+):(\d+)\s*(am|pm)/i);
       if (!m) return null;
       var hour = parseInt(m[1], 10);
-      var min = m[2];
+      var min = m[2].length === 1 ? '0' + m[2] : m[2];
       var suffix = m[3].toLowerCase();
       if (suffix === 'pm' && hour < 12) hour += 12;
       if (suffix === 'am' && hour === 12) hour = 0;

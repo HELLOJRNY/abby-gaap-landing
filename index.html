@@ -1126,7 +1126,7 @@
         // cache: 'no-cache' asks the browser to revalidate. Google's
         // published CSV endpoint has short cache lifetimes anyway
         // (typically ~5 min propagation).
-        return fetch(PUBLISHED_CSV_URL + '&_=' + Date.now(), { method: 'GET', cache: 'no-cache' })
+        return fetch(PUBLISHED_CSV_URL + '&t=' + Date.now(), { method: 'GET', cache: 'no-cache' })
           .then(function (r) { return r.text(); })
           .then(function (csvText) {
             console.log('[Abby booking] Booked keys sourced from CSV');

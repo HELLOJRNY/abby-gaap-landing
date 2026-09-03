@@ -986,7 +986,17 @@
     // ------------------------------------------------------------------
     // Storage
     // ------------------------------------------------------------------
+    // Booked slots come from two sources:
+    //   1. remoteBooked - the Google Sheet, fetched via Apps Script doGet
+    //      on page load. This is the primary source of truth so every
+    //      visitor (including incognito and other browsers) sees the
+    //      same set of taken slots.
+    //   2. localBooked (localStorage) - fallback for instant feedback
+    //      the moment this browser makes a booking, before the Sheet
+    //      has propagated back through doGet.
+    // isBooked() returns true if either source knows about the slot.
     var STORAGE_KEY = 'abby_gaap_bookings_v1';
+    var remoteBooked = {};
     function loadBooked() {
       try {
         var raw = localStorage.getItem(STORAGE_KEY);
@@ -997,8 +1007,10 @@
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
     }
     function isBooked(day, time) {
-      var map = loadBooked();
-      return !!(map[day] && map[day][time]);
+      var local = loadBooked();
+      if (local[day] && local[day][time]) return true;
+      if (remoteBooked[day] && remoteBooked[day][time]) return true;
+      return false;
     }
     function markBooked(day, time, record) {
       var map = loadBooked();
@@ -1007,6 +1019,25 @@
       if (!record.timestamp) record.timestamp = new Date().toISOString();
       map[day][time] = record;
       saveBooked(map);
+    }
+
+    function fetchRemoteBooked() {
+      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var next = {};
+          Object.keys(data || {}).forEach(function (day) {
+            if (!data[day] || !data[day].length) return;
+            next[day] = {};
+            data[day].forEach(function (time) { next[day][time] = true; });
+          });
+          remoteBooked = next;
+          console.log('[Abby booking] Sheet booked slots loaded:', remoteBooked);
+          renderGrid();
+        })
+        .catch(function (err) {
+          console.error('[Abby booking] Failed to load booked slots from sheet, falling back to localStorage:', err);
+        });
     }
 
     // ------------------------------------------------------------------
@@ -1362,7 +1393,10 @@
       setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
     }
 
+    // Instant paint from localStorage, then override with the Sheet's
+    // canonical set of booked slots once doGet responds.
     renderGrid();
+    fetchRemoteBooked();
 
     // ------------------------------------------------------------------
     // Admin view (accessible via ?admin in the URL)
@@ -1523,14 +1557,66 @@
       5. On first run, Google will prompt for authorisation for
          Sheets and External requests (UrlFetchApp). Accept both.
 
-    What the script does on each booking:
-      - Appends a row to the target Sheet (openById).
-      - Calls Resend from the server to send a confirmation to the
-        attendee (from corinne@cheersabby.com).
-      - Calls Resend again to send a notification. The recipient is
-        currently molly@letsjourney.io for testing.
-      TODO: change the notification recipient back to
-      corinne@cheersabby.com and mark@cheersabby.com before go live.
+    What the script does:
+      doPost (on each booking submission):
+        - Appends a row to the target Sheet (openById).
+        - Calls Resend from the server to send a confirmation to the
+          attendee (from corinne@cheersabby.com).
+        - Calls Resend again to send a notification. The recipient is
+          currently molly@letsjourney.io for testing.
+        TODO: change the notification recipient back to
+        corinne@cheersabby.com and mark@cheersabby.com before go live.
+
+      doGet (on every page load):
+        - Reads the Sheet and returns a JSON map of booked slots:
+          { "2026-09-10": ["09:30", "09:45"], "2026-09-11": ["10:00"] }
+        - The client uses this as the source of truth so every
+          visitor sees the same greyed-out slots.
+
+    function doGet() {
+      try {
+        var sheet = SpreadsheetApp.openById('1KRE8XIWhDHRQJGP14VNvwzO6i_NZifzhqhSFAWXC7MY').getActiveSheet();
+        var rows = sheet.getDataRange().getValues();
+        var booked = {};
+        for (var i = 0; i < rows.length; i++) {
+          var row = rows[i];
+          var day = labelToDate(row[1]);   // column B: selectedDateLabel
+          var time = labelToTime(row[2]);  // column C: selectedTimeLabel
+          if (!day || !time) continue;     // skips header row and any blanks
+          if (!booked[day]) booked[day] = [];
+          if (booked[day].indexOf(time) === -1) booked[day].push(time);
+        }
+        return ContentService.createTextOutput(JSON.stringify(booked))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch(err) {
+        Logger.log(err.toString());
+        return ContentService.createTextOutput(JSON.stringify({ error: err.toString() }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    function labelToDate(label) {
+      if (!label) return null;
+      var months = { January: '01', February: '02', March: '03', April: '04', May: '05', June: '06', July: '07', August: '08', September: '09', October: '10', November: '11', December: '12' };
+      var m = String(label).match(/(\d{1,2})\s+(\w+)\s+(\d{4})/);
+      if (!m) return null;
+      var day = m[1].length === 1 ? '0' + m[1] : m[1];
+      var month = months[m[2]];
+      if (!month) return null;
+      return m[3] + '-' + month + '-' + day;
+    }
+
+    function labelToTime(label) {
+      if (!label) return null;
+      var m = String(label).match(/(\d+):(\d+)\s*(am|pm)/i);
+      if (!m) return null;
+      var hour = parseInt(m[1], 10);
+      var min = m[2];
+      var suffix = m[3].toLowerCase();
+      if (suffix === 'pm' && hour < 12) hour += 12;
+      if (suffix === 'am' && hour === 12) hour = 0;
+      return (hour < 10 ? '0' + hour : hour) + ':' + min;
+    }
 
     function doPost(e) {
       try {

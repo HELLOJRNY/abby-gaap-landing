@@ -1588,8 +1588,8 @@
         var booked = [];
         for (var i = 0; i < rows.length; i++) {
           var row = rows[i];
-          var day = labelToDate(row[1]);   // column B: selectedDateLabel
-          var time = labelToTime(row[2]);  // column C: selectedTimeLabel
+          var day = labelToDate(row[0]);   // column A: selectedDateLabel
+          var time = labelToTime(row[1]);  // column B: selectedTimeLabel
           if (!day || !time) continue;     // skips header row and any blanks
           var key = day + '-' + time;
           if (booked.indexOf(key) === -1) booked.push(key);
@@ -1630,7 +1630,9 @@
       try {
         var sheet = SpreadsheetApp.openById('1KRE8XIWhDHRQJGP14VNvwzO6i_NZifzhqhSFAWXC7MY').getActiveSheet();
         var p = e.parameter;
-        sheet.appendRow([p.timestamp, p.selectedDateLabel, p.selectedTimeLabel, p.firstName, p.lastName, p.firm, p.email, p.phone, p.notes]);
+        // Column order matches the sheet: date label, time label, timestamp,
+        // then first name, last name, firm, email, phone, notes.
+        sheet.appendRow([p.selectedDateLabel, p.selectedTimeLabel, p.timestamp, p.firstName, p.lastName, p.firm, p.email, p.phone, p.notes]);
 
         var RESEND_API_KEY = PropertiesService.getScriptProperties().getProperty('RESEND_API_KEY');
         if (!RESEND_API_KEY) throw new Error('Missing script property RESEND_API_KEY');

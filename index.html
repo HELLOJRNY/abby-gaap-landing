@@ -982,6 +982,14 @@
     // ------------------------------------------------------------------
     var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytc8L_cRjOoX2FXUkLH9iEFQEYhngRnl0oLh-6Hi2M4NMZpqK2S-FR-Oz_T1gXnJ6U/exec';
 
+    // Booked slots are read from the Google Sheet's published CSV URL,
+    // which is served from Google's CDN and has no cold-start delay
+    // (typically a few hundred ms). Bookings are still POSTed to the
+    // Apps Script URL above. Follow the steps in the response to
+    // publish the sheet as CSV and paste the URL here.
+    // Until this is set, initSlots falls back to Apps Script doGet.
+    var PUBLISHED_CSV_URL = 'YOUR_PUBLISHED_CSV_URL_HERE';
+
     var DAYS = [
       { key: '2026-09-10', label: 'Thursday 10 September 2026' },
       { key: '2026-09-11', label: 'Friday 11 September 2026' }
@@ -1035,6 +1043,104 @@
       sessionBooked.add(key);
     }
 
+    // ------------------------------------------------------------------
+    // Read: CSV first (fast, no cold start), Apps Script /exec fallback
+    // ------------------------------------------------------------------
+    function hasCsvUrl() {
+      return typeof PUBLISHED_CSV_URL === 'string' &&
+        PUBLISHED_CSV_URL.length > 0 &&
+        PUBLISHED_CSV_URL.indexOf('YOUR_') !== 0;
+    }
+
+    // RFC 4180-ish CSV parser. Handles quoted fields, escaped quotes
+    // ("" inside a quoted field), embedded commas and newlines. Good
+    // enough for a Google-published CSV.
+    function parseCsv(text) {
+      var rows = [];
+      var current = [];
+      var field = '';
+      var inQuotes = false;
+      for (var i = 0; i < text.length; i++) {
+        var c = text.charAt(i);
+        if (inQuotes) {
+          if (c === '"') {
+            if (text.charAt(i + 1) === '"') { field += '"'; i++; }
+            else { inQuotes = false; }
+          } else {
+            field += c;
+          }
+        } else {
+          if (c === '"') { inQuotes = true; }
+          else if (c === ',') { current.push(field); field = ''; }
+          else if (c === '\r') { /* skip */ }
+          else if (c === '\n') { current.push(field); rows.push(current); current = []; field = ''; }
+          else { field += c; }
+        }
+      }
+      if (field.length || current.length) { current.push(field); rows.push(current); }
+      return rows;
+    }
+
+    // Ports of the Apps Script parsers so the client can build slot
+    // keys directly from the CSV without a round trip to the server.
+    function clientLabelToDate(label) {
+      if (!label) return null;
+      var months = { january: '01', february: '02', march: '03', april: '04', may: '05', june: '06', july: '07', august: '08', september: '09', october: '10', november: '11', december: '12' };
+      var m = String(label).trim().match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+      if (!m) return null;
+      var day = m[1].length === 1 ? '0' + m[1] : m[1];
+      var month = months[m[2].toLowerCase()];
+      if (!month) return null;
+      return m[3] + '-' + month + '-' + day;
+    }
+    function clientLabelToTime(label) {
+      if (!label) return null;
+      var m = String(label).trim().match(/(\d+):(\d+)\s*(am|pm)/i);
+      if (!m) return null;
+      var hour = parseInt(m[1], 10);
+      var min = m[2].length === 1 ? '0' + m[2] : m[2];
+      var suffix = m[3].toLowerCase();
+      if (suffix === 'pm' && hour < 12) hour += 12;
+      if (suffix === 'am' && hour === 12) hour = 0;
+      return (hour < 10 ? '0' + hour : hour) + ':' + min;
+    }
+
+    function csvToBookedKeys(csvText) {
+      var rows = parseCsv(csvText);
+      var keys = [];
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var day = clientLabelToDate(row[0]);   // column A: selectedDateLabel
+        var time = clientLabelToTime(row[1]);  // column B: selectedTimeLabel
+        if (!day || !time) continue;           // skips header row and blanks
+        var key = day + '|' + time;
+        if (keys.indexOf(key) === -1) keys.push(key);
+      }
+      return keys;
+    }
+
+    // Returns a Promise<string[]> of booked slot keys, using the CSV
+    // URL when configured, otherwise falling back to Apps Script doGet.
+    function fetchBookedKeys() {
+      if (hasCsvUrl()) {
+        // cache: 'no-cache' asks the browser to revalidate. Google's
+        // published CSV endpoint has short cache lifetimes anyway
+        // (typically ~5 min propagation).
+        return fetch(PUBLISHED_CSV_URL + '&_=' + Date.now(), { method: 'GET', cache: 'no-cache' })
+          .then(function (r) { return r.text(); })
+          .then(function (csvText) {
+            console.log('[Abby booking] Booked keys sourced from CSV');
+            return csvToBookedKeys(csvText);
+          });
+      }
+      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          console.log('[Abby booking] Booked keys sourced from Apps Script doGet');
+          return (data && Array.isArray(data.booked)) ? data.booked : [];
+        });
+    }
+
     function absorbLocalStorageBookings() {
       var records = loadBookingRecords();
       Object.keys(records).forEach(function (day) {
@@ -1044,12 +1150,12 @@
       });
     }
 
-    // Initial load: fetch first, then render. Show a spinner in the
-    // calendar card until the response (or timeout) resolves. If the
-    // fetch takes longer than 8 seconds we render with localStorage
-    // as a fallback so the visitor isn't blocked, but the fetch stays
-    // in flight - if the server responds later we merge those slots
-    // in and re-render so they still get greyed out.
+    // Initial load: fetch first, then render. Show the spinner in the
+    // calendar card until the response resolves. If the fetch takes
+    // longer than 10 seconds we render with localStorage as a fallback
+    // so the visitor is not blocked, but the fetch stays in flight -
+    // if the server responds later we replace those slots and re-render
+    // so they still get greyed out.
     function initSlots() {
       var rendered = false; // whether we have already painted a grid
 
@@ -1061,17 +1167,15 @@
 
       var timeoutId = setTimeout(function () {
         if (rendered) return;
-        console.warn('[Abby booking] Sheet fetch slow (>8s). Rendering with localStorage now; server response will still be applied when it arrives.');
+        console.warn('[Abby booking] Sheet fetch slow (>10s). Rendering with localStorage now; server response will still be applied when it arrives.');
         absorbLocalStorageBookings();
         renderGrid();
         markReady();
-      }, 8000);
+      }, 10000);
 
-      fetch(APPS_SCRIPT_URL, { method: 'GET' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
+      fetchBookedKeys()
+        .then(function (arr) {
           clearTimeout(timeoutId);
-          var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
 
           // -----------------------------------------------------------
           // Debug: dump the sheet keys and the grid keys side by side.
@@ -1080,7 +1184,6 @@
           // are producing subtly different strings (whitespace, case,
           // hyphen vs pipe, etc.).
           // -----------------------------------------------------------
-          console.log('[Abby booking] Raw doGet response:', data);
           console.log('[Abby booking] Sheet keys (' + arr.length + '):', arr);
           var allGridKeys = [];
           DAYS.forEach(function (d) {
@@ -1123,15 +1226,13 @@
         });
     }
 
-    // Silent refresh: no spinner, no timeout, no fallback. Merges any
-    // new booked slots from the sheet on top of what this session has
-    // already added, so a just-booked slot cannot flicker back to
-    // available if the sheet has not yet propagated.
+    // Silent refresh: no spinner, no timeout, no fallback. Replaces the
+    // booked set with what the server currently reports, unioned with
+    // this session's own bookings so a just-booked slot cannot flicker
+    // back to available if the sheet has not yet propagated.
     function refreshBookedSlots() {
-      return fetch(APPS_SCRIPT_URL, { method: 'GET' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          var arr = (data && Array.isArray(data.booked)) ? data.booked : [];
+      return fetchBookedKeys()
+        .then(function (arr) {
           var merged = new Set(arr);
           sessionBooked.forEach(function (k) { merged.add(k); });
           bookedSlots = merged;
